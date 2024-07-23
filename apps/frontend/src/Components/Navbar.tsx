@@ -1,5 +1,5 @@
-import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
+import LoginButton from "./LoginButton";
 
 export const Navbar = () => {
     return (
@@ -11,8 +11,7 @@ export const Navbar = () => {
                     </Link>
                 </div>
                 <div className="flex">
-                    <Button variant="contained">Log in</Button>
-                    {/* <div className="px-2">Log in</div> */}
+                    <LoginButton />
                     <div className="px-2">Sign up</div>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import {Navbar} from "../Components/Navbar.tsx";
 
 const LandingPage = () => {
   return (
-    <div className='h-screen bg-[#202020]'>
+    <div className='h-screen bg-[#fff]'>
         <div className=''>
             <Navbar />
         </div>
