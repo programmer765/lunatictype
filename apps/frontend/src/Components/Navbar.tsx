@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import LoginButton from "./LoginButton";
+import SignUpButton from "./SignUpButton";
 
 export const Navbar = () => {
     return (
@@ -11,8 +12,12 @@ export const Navbar = () => {
                     </Link>
                 </div>
                 <div className="flex">
-                    <LoginButton />
-                    <div className="px-2">Sign up</div>
+                    <div className='px-2'>
+                        <LoginButton />
+                    </div>
+                    <div className='px-2'>
+                        <SignUpButton />
+                    </div>
                 </div>
             </div>
         </div>
