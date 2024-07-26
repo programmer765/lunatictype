@@ -9,6 +9,9 @@ const LandingPage = () => {
         <div className=''>
             <Navbar />
         </div>
+        <div className="pt-16 text-[#a4b5a3] text-center text-6xl font-serif">
+            KNOW YOUR KEYBOARD BETTER!!
+        </div>
     </div>
   )
 }
