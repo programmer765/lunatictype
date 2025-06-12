@@ -1,6 +1,8 @@
 import express, { Request, Response} from 'express';
-import randomWordRoutes from './routes/randomWordRoutes';
+import randomWordRouter from './routes/randomWordRoutes';
 import cors from 'cors';
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import userRouter from './routes/userRoutes';
 
 const app = express();
 
@@ -26,7 +28,8 @@ app.get('/', (req: Request, res: Response) => {
 //     }
 // })
 
-app.use('/randomWord', randomWordRoutes);
+app.use('/randomWord', createExpressMiddleware({ router: randomWordRouter }));
+app.use('/user', createExpressMiddleware({ router: userRouter }));
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
