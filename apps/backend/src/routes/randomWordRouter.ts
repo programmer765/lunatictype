@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { generate, count} from 'random-words';
-import { t } from '../trpc';
+import { procedure, router, t } from '../trpc';
 import { z } from 'zod';
 
 const wordCount = 50;
@@ -34,9 +34,10 @@ const wordCount = 50;
 
 // export default router;
 
-const randomWordRouter = t.router({
-    generate: t.procedure.query(() => {
+const randomWordRouter = router({
+    generate: procedure.query(() => {
         const randomWord = generate(wordCount);
+        console.log('api/randomWordRouter.generate')
         return randomWord;
     })
 })

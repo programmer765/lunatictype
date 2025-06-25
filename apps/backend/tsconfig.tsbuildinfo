@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/trpc.ts","./src/routes/randomwordroutes.ts","./src/routes/userroutes.ts"],"version":"5.8.3"}
+{"root":["./src/app.ts","./src/index.ts","./src/trpc.ts","./src/routes/index.ts","./src/routes/randomwordrouter.ts","./src/routes/userroutes.ts"],"version":"5.8.3"}

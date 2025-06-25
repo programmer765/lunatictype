@@ -10,9 +10,9 @@
       "strict": true,
       "skipLibCheck": true,
       "declaration": false,
-      "declarationMap": false
+      "declarationMap": false,
 
     },
     "exclude": ["node_modules"],
-    "include": ["."]
+    "include": [".", "src", "types", "src/routes"]
 }

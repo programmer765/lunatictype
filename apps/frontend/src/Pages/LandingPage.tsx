@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import PracticeBtn from "../Components/PracticeBtn.tsx";
 import PlayOnlineBtn from "../Components/PlayOnlineBtn.tsx";
 import { useState } from "react";
+import Practice from "./Practice.tsx";
+import PlayOnline from "./PlayOnline.tsx";
 
 const LandingPage : React.FC = () => {
   const [isPractice, setIsPractice] = useState<boolean>(false);
@@ -47,14 +49,14 @@ const LandingPage : React.FC = () => {
           isPractice ? 
           ( 
             <div>
-              Practice
+              <Practice />
             </div>
           )
           :
           isOnline ? 
           (
             <div>
-              Online
+              <PlayOnline />
             </div>
           )
           :
