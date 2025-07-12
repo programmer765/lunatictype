@@ -62,7 +62,7 @@ const LandingPage : React.FC = () => {
           :
           (
           <motion.div className="flex flex-col items-center gap-y-40" variants={item}>
-            <motion.div className="pt-16 text-[#a4b5a3] text-6xl font-serif" variants={item}>
+            <motion.div className="pt-16 text-[#a4b5a3] text-6xl font-serif text-center" variants={item}>
                 KNOW YOUR KEYBOARD BETTER!!
             </motion.div>
             <motion.div className="flex gap-x-16">

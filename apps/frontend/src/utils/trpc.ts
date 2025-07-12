@@ -4,7 +4,15 @@ import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import { AppRouter } from 'backend';
 
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    }
+  }
+});
+
+
 const trpcClient = createTRPCClient<AppRouter>({
   links: [httpBatchLink({ url: 'http://localhost:3000/api' })],
 });

@@ -21,7 +21,7 @@ export const Navbar : React.FC<NavbarProps> = ({ isPractice, isOnline, setIsPrac
         <div className="py-5 text-white px-5">
             <div className="flex justify-between">
                 <div className="flex items-center">
-                    <div className="text-5xl font-semibold font-mono text-[#d4dce4] hover:cursor-pointer" onClick={() => handleLunaticTypeClick(setIsPractice, setIsOnline)}>
+                    <div className="md:text-5xl text-1xl font-semibold font-mono text-[#d4dce4] hover:cursor-pointer" onClick={() => handleLunaticTypeClick(setIsPractice, setIsOnline)}>
                         <Link to="/">
                             lunatictype
                         </Link>

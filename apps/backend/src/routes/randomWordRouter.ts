@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { generate, count} from 'random-words';
 import { procedure, router, t } from '../trpc';
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 
 const wordCount = 50;
 
@@ -36,9 +37,22 @@ const wordCount = 50;
 
 const randomWordRouter = router({
     generate: procedure.query(() => {
-        const randomWord = generate(wordCount);
-        console.log('api/randomWordRouter.generate')
-        return randomWord;
+        try {
+            const randomWord = generate(wordCount);
+            if(Array.isArray(randomWord) === false || randomWord === undefined || randomWord === null) {
+                throw Error("randomWords did not generate propery. It is either not an array or undefined")
+            }
+            const words = Array.isArray(randomWord) ? randomWord : [""]
+            console.log('api/randomWordRouter.generate')
+            return words;
+        }
+        catch(err) {
+            console.log(`Server error: ${err}`)
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: err instanceof Error ? err.message : "An unknown error occurred"
+            })
+        }
     })
 })
 

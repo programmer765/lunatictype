@@ -1,12 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, { useState } from 'react'
-import { useGetRandomWordFromServer } from '../server/router/getDataFromServer'
+import PracticeWords from '../Components/PracticeWords'
+import PracticeType from '../Components/PracticeType'
 
 const Practice : React.FC = () => {
 
   // const [words, setWords] = useState<Array<string>>([])
 
-  useGetRandomWordFromServer()
   // console.log(getWords)
 
   // useEffect(() => {
@@ -14,7 +14,14 @@ const Practice : React.FC = () => {
   // }, [getWords])
 
   return (
-    <div className='text-white'>Practice</div>
+    <div className='px-10'>
+      <div className='my-10'>
+        <PracticeType />
+      </div>
+      <div>
+        < PracticeWords />
+      </div>
+    </div>
   )
 }
 
