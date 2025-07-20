@@ -2,24 +2,26 @@
 import React, { useState } from 'react'
 import PracticeWords from '../Components/PracticeWords'
 import PracticeType from '../Components/PracticeType'
+import RefreshWords from '../Components/RefreshWords'
 
 const Practice : React.FC = () => {
 
-  // const [words, setWords] = useState<Array<string>>([])
+  const [componentKey, setComponentKey] = useState<number>(0)
 
-  // console.log(getWords)
-
-  // useEffect(() => {
-  //   setWords(getWords)
-  // }, [getWords])
+  const handleReload = () => {
+    setComponentKey(prevKey => 1 - prevKey)
+  }
 
   return (
     <div className='px-10'>
       <div className='my-10'>
         <PracticeType />
       </div>
-      <div>
-        < PracticeWords />
+      <div className='py-10'>
+        <PracticeWords key={componentKey} />
+      </div>
+      <div className='py-10'>
+        <RefreshWords onReloadClick={handleReload} />
       </div>
     </div>
   )
