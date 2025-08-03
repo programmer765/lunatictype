@@ -62,10 +62,14 @@ const PracticeType = () => {
           </div>
         </div>
         <div className="ml-auto">
-          {
-            active === 'time' ? timeLeft : wordsLeft
-          }
-          {active === 'time' ? ' seconds' : ' words'} left
+          <span className="text-3xl font-bold pr-2 text-[#e09859]">
+            {
+              active === 'time' ? timeLeft : wordsLeft
+            }
+          </span>
+          <span>
+            {active === 'time' ? ' seconds' : ' words'} left
+          </span>
         </div>
       </div>
     </div>
