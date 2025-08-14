@@ -1,4 +1,5 @@
 import { motion } from  "framer-motion"
+import { Link } from "react-router-dom"
 
 
 const SignUpButton : React.FC = () => {
@@ -7,7 +8,7 @@ const SignUpButton : React.FC = () => {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
     >
-        Signup
+      <Link to="/v1/auth" state={{ from: 'signup' }}>Signup</Link>
     </motion.div>
   )
 }
