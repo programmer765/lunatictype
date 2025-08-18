@@ -15,8 +15,8 @@ const AuthPage : React.FC = () => {
           <div className='flex items-center justify-center py-10'>
             <h1 className='text-4xl font-semibold'>LunaticType</h1>
           </div>
-          <div className='flex px-16'>
-            <div>Welcome!</div>
+          <div className='flex flex-col px-16 pt-20'>
+            <div className='text-2xl'>Welcome!</div>
           </div>
         </div>
         <div className='w-1/2 h-full bg-gradient-to-br from-[#100E1C] via-[#181626] to-[#000000] rounded-r-lg shadow-lg p-8'>
