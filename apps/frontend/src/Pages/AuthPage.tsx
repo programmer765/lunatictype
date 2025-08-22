@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import Login from '../Components/AuthPageComponents/Login'
@@ -7,8 +7,7 @@ import Signup from '../Components/AuthPageComponents/Signup'
 const AuthPage : React.FC = () => {
 
     const location = useLocation()
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const from : string = location.state?.from || 'login'
+    const [authState, setAuthState] = useState(location.state?.from === 'login' ? 'login' : 'signup')
 
   return (
     <motion.div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#141220] to-[#000000]">
@@ -17,13 +16,13 @@ const AuthPage : React.FC = () => {
           <div className='flex items-center justify-center py-10'>
             <h1 className='text-3xl font-semibold'>LunaticType</h1>
           </div>
-          <div className='flex flex-col px-20 pt-10'>
+          <div className='flex flex-col px-20 pt-5'>
             <div className='text-xl pb-2'>Welcome!</div>
             {
-              (from === 'login') ? 
-                <Login />
+              (authState === 'login') ? 
+                <Login setAuthState={setAuthState} />
               :
-                <Signup />
+                <Signup setAuthState={setAuthState} />
             }
           </div>
         </div>
