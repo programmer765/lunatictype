@@ -12,6 +12,10 @@ const authRouter = t.router({
     google: t.router({
         login: procedure.input( z.object({ name: z.string() })).mutation(async({ input }) => {
             return { message: `Google login route for ${input.name}` };
+        }),
+
+        register: procedure.input( z.object({ email: z.string().email(), password: z.string().min(6) })).mutation(async({ input }) => {
+            return { message: `Google register route for ${input.email}` };
         })
     })
 })
