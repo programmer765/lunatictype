@@ -19,11 +19,15 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
   const isEmailValid = emailSchema.safeParse(email).success;
   const isPasswordValid = passwordSchema.safeParse(password).success;
 
+  const handleGoogleLogin = () => {
+    window.location.href = 'https://accounts.google.com/o/oauth2/auth';
+  }
+
   return (
     <div>
       <div className='text-sm'>Please log in to continue.</div>
       <div className='pt-4'>
-        <div className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>
+        <div onClick={handleGoogleLogin} className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>
           <FcGoogle scale={15} /> 
           <span className='text-sm'>Log in with Google</span>
         </div>

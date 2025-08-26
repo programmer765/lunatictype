@@ -1,6 +1,7 @@
+import passport from "passport";
 import { procedure, t } from "../trpc";
 import { z } from 'zod';
-
+import { Request, Response } from "express";
 
 const authRouter = t.router({
     login: procedure.query(() => {
@@ -10,14 +11,17 @@ const authRouter = t.router({
         return { message: "Register route" };
     }),
     google: t.router({
-        login: procedure.input( z.object({ name: z.string() })).mutation(async({ input }) => {
-            return { message: `Google login route for ${input.name}` };
+        callback: procedure.query(() => {
+            passport.authenticate('google', { session: false }), (req : Request, res: Response) => {
+                if (req.user) {
+                    return res.json({ user: req.user });
+                }
+                return res.status(401).json({ error: "Unauthorized" });
+            };
         }),
-
-        register: procedure.input( z.object({ email: z.string().email(), password: z.string().min(6) })).mutation(async({ input }) => {
-            return { message: `Google register route for ${input.email}` };
-        })
+        
     })
+    
 })
 
 export default authRouter;
