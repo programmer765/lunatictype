@@ -1,5 +1,5 @@
 import { trpc } from "../../utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 const useGetRandomWordFromServer = () => {
     const { data } = useQuery(trpc.randomWord.generate.queryOptions())
@@ -10,6 +10,11 @@ const useGetRandomWordFromServer = () => {
     return words
 }
 
+const useGetGoogleAuthLink = () => {
+    return useMutation(trpc.auth.google.link.mutationOptions())
+}
+
 export {
     useGetRandomWordFromServer,
+    useGetGoogleAuthLink
 }

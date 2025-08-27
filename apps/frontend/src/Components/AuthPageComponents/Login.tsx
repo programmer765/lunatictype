@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
 import * as z from 'zod';
+import { useGetGoogleAuthLink } from '../../server/router/getDataFromServer';
 
 interface LoginProps {
   setAuthState: React.Dispatch<React.SetStateAction<string>>;
@@ -19,8 +20,11 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
   const isEmailValid = emailSchema.safeParse(email).success;
   const isPasswordValid = passwordSchema.safeParse(password).success;
 
-  const handleGoogleLogin = () => {
-    window.location.href = 'https://accounts.google.com/o/oauth2/auth';
+  const googleAuthLink = useGetGoogleAuthLink();
+  const handleGoogleLogin = async () => {
+    const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: "login" });
+    console.log(result.url)
+    window.location.href = result.url;
   }
 
   return (

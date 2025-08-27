@@ -7,6 +7,7 @@ const PracticeWords = () => {
 
   const [currentSentence, setCurrentSentence] = useState<string>('')
   const [wordSentence, setWordSentence] = useState<string>('')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const chars = [...wordSentence]
   
   useEffect(() => {

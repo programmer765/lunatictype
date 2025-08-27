@@ -38,12 +38,12 @@ const wordCount = 50;
 const randomWordRouter = router({
     generate: procedure.query(() => {
         try {
+            console.log('api/randomWordRouter.generate')
             const randomWord = generate(wordCount);
             if(Array.isArray(randomWord) === false || randomWord === undefined || randomWord === null) {
                 throw Error("randomWords did not generate propery. It is either not an array or undefined")
             }
             const words = Array.isArray(randomWord) ? randomWord : [""]
-            console.log('api/randomWordRouter.generate')
             return words;
         }
         catch(err) {
