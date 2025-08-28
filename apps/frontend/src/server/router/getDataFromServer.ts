@@ -14,7 +14,12 @@ const useGetGoogleAuthLink = () => {
     return useMutation(trpc.auth.google.link.mutationOptions())
 }
 
+const useGetGoogleTokenLink = () => {
+    return useMutation(trpc.auth.google.token.mutationOptions())
+}
+
 export {
     useGetRandomWordFromServer,
-    useGetGoogleAuthLink
+    useGetGoogleAuthLink,
+    useGetGoogleTokenLink
 }

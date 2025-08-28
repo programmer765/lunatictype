@@ -1,28 +1,51 @@
-import passport from "passport";
-import { procedure, t } from "../trpc";
+import { t, router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from 'zod';
-import { Request, Response } from "express";
+import { json, Request, Response } from "express";
 import { TRPCError } from "@trpc/server";
+import axios from "axios";
 
 const google_uri = process.env.GOOGLE_AUTH_URI;
 const google_client_id = process.env.GOOGLE_CLIENT_ID;
 const google_client_secret = process.env.GOOGLE_CLIENT_SECRET;
-const google_redirect_uri = process.env.GOOGLE_REDIRECT_URI || "";
-const google_scope = process.env.GOOGLE_SCOPE;
+const google_token_uri = process.env.GOOGLE_TOKEN_URI || "";
+const google_redirect_uri = process.env.GOOGLE_REDIRECT_URI;
 
-const authRouter = t.router({
-    login: procedure.query(() => {
+const authRouter = router({
+    login: publicProcedure.query(() => {
         return { message: "Login route" };
     }),
-    register: procedure.query(() => {
+    register: publicProcedure.query(() => {
         return { message: "Register route" };
     }),
-    google: t.router({
-        callback: procedure.query(() => {
-            console.log("Google callback");
-            return { message: "Success" }
+    google: router({
+        token: publicProcedure.input(z.object({ code: z.string(), state: z.string().optional() })).mutation( async({ input }) => {
+            try {
+                console.log("Google callback");
+                const { code, state } = input;
+                // return { message: code }
+    
+                const { data } = await axios.post(google_token_uri, {
+                    code: code,
+                    client_id: google_client_id,
+                    client_secret: google_client_secret,
+                    redirect_uri: google_redirect_uri,
+                    grant_type: "authorization_code"
+                })
+    
+                const { access_token, id_token, } = data;
+    
+                return { message: data }
+            }
+            catch(error) {
+                // console.error(error);
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: JSON.stringify((typeof error === "object" && error !== null && "response" in error && (error as any).response?.data))
+                            || (error instanceof Error ? error.message : "An unknown error occurred"),
+                });
+            }
         }),
-        link: procedure.input(z.object({ redirect_url: z.string().url(), state: z.string().optional() })).mutation(({ input }) => {
+        link: publicProcedure.input(z.object({ redirect_url: z.string().url(), state: z.string().optional() })).mutation(({ input }) => {
             try {
                 const redirect_url = input.redirect_url
                 const state = input.state || "login"
@@ -35,7 +58,9 @@ const authRouter = t.router({
             catch (error) {
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
-                    message: error instanceof Error ? error.message : "An unknown error occurred"
+                    message:
+                        (typeof error === "object" && error !== null && "response" in error && (error as any).response?.data)
+                            || (error instanceof Error ? error.message : "An unknown error occurred"),
                 });
             }
         })

@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
 import * as z from 'zod';
-import { useGetGoogleAuthLink } from '../../server/router/getDataFromServer';
+import { useGetGoogleAuthLink, useGetGoogleTokenLink } from '../../server/router/getDataFromServer';
+import { useSearchParams } from 'react-router-dom';
 
 interface LoginProps {
   setAuthState: React.Dispatch<React.SetStateAction<string>>;
@@ -12,6 +13,7 @@ interface LoginProps {
 const Login : React.FC<LoginProps> = ({ setAuthState }) => {
   const emailSchema = z.string().email();
   const passwordSchema = z.string().min(6).max(100);
+  const [searchParams] = useSearchParams()
 
   const emailFound : boolean = true; // Dummy state for demonstration
   const [email, setEmail] = useState<z.infer<typeof emailSchema>>("")
@@ -21,11 +23,28 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
   const isPasswordValid = passwordSchema.safeParse(password).success;
 
   const googleAuthLink = useGetGoogleAuthLink();
+  const googleTokenLink = useGetGoogleTokenLink();
+
   const handleGoogleLogin = async () => {
     const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: "login" });
     console.log(result.url)
     window.location.href = result.url;
   }
+
+  useEffect(() => {
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+    if (state !== null) setAuthState(state);
+    if (code !== null) {
+      console.log(code);
+      const fetchToken = async() => {
+        // Handle the code from the URL
+        // const { message } = await googleTokenLink.mutateAsync({ code: code, state: "login" })
+        // console.log(message);
+      }
+      fetchToken();
+    }
+  }, [searchParams]);
 
   return (
     <div>

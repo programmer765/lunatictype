@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FcGoogle } from 'react-icons/fc';
 import { SiGithub } from 'react-icons/si';
+import { useSearchParams } from 'react-router-dom';
 import * as z from 'zod';
 
 
@@ -12,6 +13,7 @@ const Signup : React.FC<SignupProps> = ({ setAuthState }) => {
 
     const emailSchema = z.string().email();
     const passwordSchema = z.string().min(6).max(100);
+      const [searchParams] = useSearchParams()
   
     const emailFound : boolean = true; // Dummy state for demonstration
     const [email, setEmail] = useState<z.infer<typeof emailSchema>>("")
@@ -19,6 +21,12 @@ const Signup : React.FC<SignupProps> = ({ setAuthState }) => {
   
     const isEmailValid = emailSchema.safeParse(email).success;
     const isPasswordValid = passwordSchema.safeParse(password).success;
+
+    useEffect(() => {
+      // const code = searchParams.get('code');
+      const state = searchParams.get('state');
+      if (state !== null) setAuthState(state);
+    });
 
   return (
     <div>
