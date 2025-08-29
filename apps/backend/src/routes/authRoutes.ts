@@ -3,12 +3,30 @@ import { z } from 'zod';
 import { json, Request, Response } from "express";
 import { TRPCError } from "@trpc/server";
 import axios from "axios";
+import jwt from "jsonwebtoken"
 
 const google_uri = process.env.GOOGLE_AUTH_URI;
 const google_client_id = process.env.GOOGLE_CLIENT_ID;
 const google_client_secret = process.env.GOOGLE_CLIENT_SECRET;
 const google_token_uri = process.env.GOOGLE_TOKEN_URI || "";
 const google_redirect_uri = process.env.GOOGLE_REDIRECT_URI;
+const jwt_secret = process.env.JWT_SECRET || "";
+const jwt_expiry = process.env.JWT_EXPIRY || "1h";
+
+
+interface GoogleIdTokenPayload {
+    sub: string;
+    email: string;
+    name: string;
+    picture: string;
+}
+
+interface AppJWTPayload {
+    openid: string;
+    email: string;
+    name: string;
+    picture: string;
+}
 
 const authRouter = router({
     login: publicProcedure.query(() => {
@@ -32,15 +50,34 @@ const authRouter = router({
                     grant_type: "authorization_code"
                 })
     
-                const { access_token, id_token, } = data;
-    
-                return { message: data }
+                const { id_token } = data;
+
+                const decoded = jwt.decode(id_token) as GoogleIdTokenPayload | null;
+
+                if(decoded === null) {
+                    throw new TRPCError({
+                        code: 'UNAUTHORIZED',
+                        message: "Invalid ID token"
+                    });
+                }
+
+                
+                const user : AppJWTPayload = {
+                    openid: decoded.sub,
+                    email: decoded.email,
+                    name: decoded.name,
+                    picture: decoded.picture
+                };
+                
+                const appToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry})
+
+                return { token: appToken as string }
             }
-            catch(error) {
+            catch(error: any) {
                 // console.error(error);
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
-                    message: JSON.stringify((typeof error === "object" && error !== null && "response" in error && (error as any).response?.data))
+                    message: JSON.stringify((error.response?.data))
                             || (error instanceof Error ? error.message : "An unknown error occurred"),
                 });
             }

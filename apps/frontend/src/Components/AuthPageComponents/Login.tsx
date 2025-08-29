@@ -3,7 +3,7 @@ import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
 import * as z from 'zod';
 import { useGetGoogleAuthLink, useGetGoogleTokenLink } from '../../server/router/getDataFromServer';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface LoginProps {
   setAuthState: React.Dispatch<React.SetStateAction<string>>;
@@ -11,6 +11,9 @@ interface LoginProps {
 
 
 const Login : React.FC<LoginProps> = ({ setAuthState }) => {
+  
+  const navigate = useNavigate()
+
   const emailSchema = z.string().email();
   const passwordSchema = z.string().min(6).max(100);
   const [searchParams] = useSearchParams()
@@ -36,15 +39,20 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
     const state = searchParams.get('state');
     if (state !== null) setAuthState(state);
     if (code !== null) {
-      console.log(code);
+      // console.log(code);
       const fetchToken = async() => {
-        // Handle the code from the URL
-        // const { message } = await googleTokenLink.mutateAsync({ code: code, state: "login" })
-        // console.log(message);
+        const { token } = await googleTokenLink.mutateAsync({ code: code, state: state ?? "login" })
+        console.log('auth_token:', token)
+
+        if(token === null || token === undefined) {
+          navigate('.', { replace: true })
+        }
+
       }
       fetchToken();
     }
-  }, [searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
