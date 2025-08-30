@@ -12,6 +12,7 @@ const google_token_uri = process.env.GOOGLE_TOKEN_URI || "";
 const google_redirect_uri = process.env.GOOGLE_REDIRECT_URI;
 const jwt_secret = process.env.JWT_SECRET || "";
 const jwt_expiry = process.env.JWT_EXPIRY || "1h";
+const node_env = process.env.NODE_ENV || "development";
 
 
 interface GoogleIdTokenPayload {
@@ -36,7 +37,7 @@ const authRouter = router({
         return { message: "Register route" };
     }),
     google: router({
-        token: publicProcedure.input(z.object({ code: z.string(), state: z.string().optional() })).mutation( async({ input }) => {
+        token: publicProcedure.input(z.object({ code: z.string(), state: z.string().optional() })).mutation( async({ input, ctx }) => {
             try {
                 console.log("Google callback");
                 const { code, state } = input;
@@ -69,9 +70,16 @@ const authRouter = router({
                     picture: decoded.picture
                 };
                 
-                const appToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry})
+                const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry})
 
-                return { token: appToken as string }
+                ctx.res.cookie("user_info_token", userInfoToken, { 
+                    httpOnly: true,
+                    secure: node_env === "production",
+                    sameSite: node_env === "production" ? "strict" : "lax",
+                    maxAge: 60 * 60 * 1000 // 1 hour
+                });
+
+                return { success: true }
             }
             catch(error: any) {
                 // console.error(error);

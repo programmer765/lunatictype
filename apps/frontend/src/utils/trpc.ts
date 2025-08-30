@@ -18,7 +18,8 @@ const trpcClient = createTRPCClient<AppRouter>({
 });
 
 
-export const trpc = createTRPCOptionsProxy<AppRouter>({
+
+export const trpc: ReturnType<typeof createTRPCOptionsProxy<AppRouter>> = createTRPCOptionsProxy<AppRouter>({
   client: trpcClient,
   queryClient,
 });

@@ -1,15 +1,18 @@
 import express, { Request, Response} from 'express';
 import cors from 'cors';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 dotenv.config();
 import appRouter from './routes';
 import createContext from './context';
 
+const client_url = process.env.CLIENT_URL ?? "*";
 
 const app = express();
 
-app.use(cors());
+app.use(cors( { origin: client_url, credentials: true } ));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

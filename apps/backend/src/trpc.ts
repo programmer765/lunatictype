@@ -9,6 +9,7 @@ const authMiddleware = t.middleware(({ ctx, next }) => {
     }
     return next({
         ctx: {
+            ...ctx,
             user: ctx.user
         }
     });

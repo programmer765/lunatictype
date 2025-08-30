@@ -4,6 +4,7 @@ import { SiGithub } from "react-icons/si";
 import * as z from 'zod';
 import { useGetGoogleAuthLink, useGetGoogleTokenLink } from '../../server/router/getDataFromServer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Loading from '../Loading';
 
 interface LoginProps {
   setAuthState: React.Dispatch<React.SetStateAction<string>>;
@@ -21,6 +22,7 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
   const emailFound : boolean = true; // Dummy state for demonstration
   const [email, setEmail] = useState<z.infer<typeof emailSchema>>("")
   const [password, setPassword] = useState<z.infer<typeof passwordSchema>>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const isEmailValid = emailSchema.safeParse(email).success;
   const isPasswordValid = passwordSchema.safeParse(password).success;
@@ -30,7 +32,6 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
 
   const handleGoogleLogin = async () => {
     const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: "login" });
-    console.log(result.url)
     window.location.href = result.url;
   }
 
@@ -41,13 +42,16 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
     if (code !== null) {
       // console.log(code);
       const fetchToken = async() => {
-        const { token } = await googleTokenLink.mutateAsync({ code: code, state: state ?? "login" })
-        console.log('auth_token:', token)
-
-        if(token === null || token === undefined) {
+        setIsLoading(true);
+        const { success } = await googleTokenLink.mutateAsync({ code: code, state: state ?? "login" })
+        if (success === true) {
+          // Token fetched successfully
+          navigate('/')
+        } else {
+          // Handle error
+          setIsLoading(false);
           navigate('.', { replace: true })
         }
-
       }
       fetchToken();
     }
@@ -56,6 +60,7 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
 
   return (
     <div>
+      {isLoading && <Loading />}
       <div className='text-sm'>Please log in to continue.</div>
       <div className='pt-4'>
         <div onClick={handleGoogleLogin} className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>
