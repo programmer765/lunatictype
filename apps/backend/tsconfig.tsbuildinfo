@@ -1,1 +1,1 @@
-{"root":["./src/app.ts","./src/context.ts","./src/index.ts","./src/trpc.ts","./src/routes/authroutes.ts","./src/routes/index.ts","./src/routes/randomwordrouter.ts","./src/routes/temp.ts"],"version":"5.8.3"}
+{"root":["./src/app.ts","./src/context.ts","./src/env.ts","./src/index.ts","./src/trpc.ts","./src/routes/index.ts","./src/routes/randomwordrouter.ts","./src/routes/authrouters/authroutes.ts","./src/routes/authrouters/github.ts","./src/routes/authrouters/google.ts"],"version":"5.8.3"}

@@ -7,7 +7,7 @@ import Signup from '../Components/AuthPageComponents/Signup'
 const AuthPage : React.FC = () => {
 
     const location = useLocation()
-    const [authState, setAuthState] = useState(location.state?.from === 'login' ? 'login' : 'signup')
+    const [authFrom, setAuthFrom] = useState(location.state?.from === 'login' ? 'login' : 'signup')
 
   return (
     <motion.div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#141220] to-[#000000]">
@@ -21,10 +21,10 @@ const AuthPage : React.FC = () => {
           <div className='flex flex-col px-20 pt-5'>
             <div className='text-xl pb-2'>Welcome!</div>
             {
-              (authState === 'login') ? 
-                <Login setAuthState={setAuthState} />
+              (authFrom === 'login') ? 
+                <Login setAuthFrom={setAuthFrom} />
               :
-                <Signup setAuthState={setAuthState} />
+                <Signup setAuthFrom={setAuthFrom} />
             }
           </div>
         </div>

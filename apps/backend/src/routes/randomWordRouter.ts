@@ -36,7 +36,7 @@ const wordCount = 50;
 // export default router;
 
 const randomWordRouter = router({
-    generate: protectedProcedure.query(() => {
+    generate: publicProcedure.query(() => {
         try {
             console.log('api/randomWordRouter.generate')
             const randomWord = generate(wordCount);

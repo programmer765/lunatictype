@@ -6,10 +6,16 @@ import * as z from 'zod';
 
 
 interface SignupProps {
-  setAuthState: React.Dispatch<React.SetStateAction<string>>;
+  setAuthFrom: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Signup : React.FC<SignupProps> = ({ setAuthState }) => {
+interface decodedState {
+  from: string;
+  method: string;
+}
+
+
+const Signup : React.FC<SignupProps> = ({ setAuthFrom }) => {
 
     const emailSchema = z.string().email();
     const passwordSchema = z.string().min(6).max(100);
@@ -25,7 +31,12 @@ const Signup : React.FC<SignupProps> = ({ setAuthState }) => {
     useEffect(() => {
       // const code = searchParams.get('code');
       const state = searchParams.get('state');
-      if (state !== null) setAuthState(state);
+      if (state !== null) {
+        const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
+        const from = decodedState.from;
+        // const method = decodedState.method;
+        setAuthFrom(from);
+      }
     });
 
   return (
@@ -78,7 +89,7 @@ const Signup : React.FC<SignupProps> = ({ setAuthState }) => {
         </div>
         <div className='flex justify-center pt-4'>
           <p className="text-sm text-gray-500">
-            Already have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => setAuthState('login')}>Log in</span>
+            Already have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => setAuthFrom('login')}>Log in</span>
           </p>
         </div>
     </div>

@@ -1,6 +1,6 @@
 import { router, t } from "../trpc";
 import randomWordRouter from "./randomWordRouter";
-import authRouter from "./authRoutes";
+import authRouter from "./authRouters/authRoutes";
 
 const appRouter = router({
     randomWord: randomWordRouter,

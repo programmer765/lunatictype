@@ -2,16 +2,21 @@ import React, { useEffect, useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
 import * as z from 'zod';
-import { useGetGoogleAuthLink, useGetGoogleTokenLink } from '../../server/router/getDataFromServer';
+import { useGetGithubTokenLink, useGetGoogleAuthLink, useGetGoogleTokenLink, useGetGithubAuthLink } from '../../server/router/getDataFromServer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Loading from '../Loading';
 
 interface LoginProps {
-  setAuthState: React.Dispatch<React.SetStateAction<string>>;
+  setAuthFrom: React.Dispatch<React.SetStateAction<string>>;
+}
+
+interface decodedState {
+  from: string;
+  method: string;
 }
 
 
-const Login : React.FC<LoginProps> = ({ setAuthState }) => {
+const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
   
   const navigate = useNavigate()
 
@@ -27,24 +32,50 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
   const isEmailValid = emailSchema.safeParse(email).success;
   const isPasswordValid = passwordSchema.safeParse(password).success;
 
+  // Hooks for Google authentication links
   const googleAuthLink = useGetGoogleAuthLink();
   const googleTokenLink = useGetGoogleTokenLink();
 
+  // Hooks for GitHub authentication links
+  const githubAuthLink = useGetGithubAuthLink();
+  const githubTokenLink = useGetGithubTokenLink();
+
   const handleGoogleLogin = async () => {
-    const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: "login" });
+    const state = JSON.stringify({ from: 'login', method: 'google' });
+    setIsLoading(true);
+    const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
+    window.location.href = result.url;
+  }
+
+  const handleGithubLogin = async () => {
+    const state = JSON.stringify({ from: 'login', method: 'github' });
+    setIsLoading(true);
+    const result = await githubAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
     window.location.href = result.url;
   }
 
   useEffect(() => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
-    if (state !== null) setAuthState(state);
-    if (code !== null) {
-      // console.log(code);
+    
+    if (code !== null && state !== null) {
+      console.log(code);
+      const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
+      const from = decodedState.from;
+      const method = decodedState.method;
+      setAuthFrom(from);
       const fetchToken = async() => {
         setIsLoading(true);
-        const { success } = await googleTokenLink.mutateAsync({ code: code, state: state ?? "login" })
-        if (success === true) {
+        let isSuccess = false;
+        if(method === 'google') {
+          const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
+          isSuccess = success;
+        }
+        else if(method === 'github') {
+          // const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
+          isSuccess = true;
+        }
+        if (isSuccess === true) {
           // Token fetched successfully
           navigate('/')
         } else {
@@ -67,7 +98,7 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
           <FcGoogle scale={15} /> 
           <span className='text-sm'>Log in with Google</span>
         </div>
-        <div className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>
+        <div onClick={handleGithubLogin} className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>
           <SiGithub scale={15} /> 
           <span className='text-sm'>Log in with GitHub</span>
         </div>
@@ -109,7 +140,7 @@ const Login : React.FC<LoginProps> = ({ setAuthState }) => {
       </div>
       <div className='flex justify-center pt-4'>
         <p className="text-sm text-gray-500">
-          Don't have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => setAuthState('signup')}>Sign up</span>
+          Don't have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => setAuthFrom('signup')}>Sign up</span>
         </p>
       </div>
     </div>
