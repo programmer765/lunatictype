@@ -72,8 +72,8 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
           isSuccess = success;
         }
         else if(method === 'github') {
-          // const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
-          isSuccess = true;
+          const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
+          isSuccess = success;
         }
         if (isSuccess === true) {
           // Token fetched successfully

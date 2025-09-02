@@ -1,5 +1,5 @@
 import { publicProcedure, router } from "../../trpc";
-import { jwt_secret, jwt_expiry, node_env, github_client_id, redirect_uri, github_auth_uri, github_client_secret, github_token_uri } from "../../env";
+import { jwt_secret, jwt_expiry, node_env, github_client_id, redirect_uri, github_auth_uri, github_client_secret, github_token_uri, github_profile_uri } from "../../env";
 import z from 'zod';
 import { TRPCError } from "@trpc/server";
 import axios from "axios";
@@ -7,19 +7,24 @@ import jwt from "jsonwebtoken"
 
 
 interface GithubIdTokenPayload {
-    sub: string;
+    id: string;
     email: string;
     name: string;
-    picture: string;
+    avatar_url: string;
 }
 
 interface AppJWTPayload {
+    id: string;
     email: string;
     name: string;
     picture: string;
 }
 
-
+interface GithubTokenResponse {
+    access_token: string;
+    token_type: string;
+    scope: string;
+}
 
 
 const github = router({
@@ -32,27 +37,52 @@ const github = router({
         try {
             const { code, state } = input;
 
-            const { data } = await axios.post(github_token_uri, {
+            const { data } : { data: GithubTokenResponse } = await axios.post(github_token_uri, {
                 code: code,
                 client_id: github_client_id,
                 client_secret: github_client_secret,
                 redirect_uri: redirect_uri,
+            },
+            {
+                headers: {
+                    Accept: "application/json",
+                },
             });
 
             const { access_token } = data;
 
-            // console.log(code)
+            if(access_token === null || access_token === undefined || access_token === "") {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'Invalid GitHub access token',
+                });
+            }
 
-            // const userInfoToken = jwt.verify(access_token, jwt_secret) as AppJWTPayload;
+            const { data : profile } : { data: GithubIdTokenPayload } = await axios.get(github_profile_uri, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                },
+            });
 
-            // ctx.res.cookie("userInfoToken", userInfoToken, {
-            //     httpOnly: true,
-            //     secure: node_env === "production",
-            //     sameSite: node_env === "production" ? "strict" : "lax",
-            //     maxAge: 60 * 60 * 1000 // 1 hour
-            // });
+            const user: AppJWTPayload = {
+                id: profile.id,
+                email: profile.email,
+                name: profile.name,
+                picture: profile.avatar_url,
+            };
 
-            return { success: true, data: data }
+            const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry });
+
+            console.log(userInfoToken, user)
+
+            ctx.res.cookie("userInfoToken", userInfoToken, {
+                httpOnly: true,
+                secure: node_env === "production",
+                sameSite: node_env === "production" ? "strict" : "lax",
+                maxAge: jwt_expiry * 1000 // 1 hour
+            });
+
+            return { success: true }
 
         } catch (error) {
             throw new TRPCError({

@@ -5,7 +5,7 @@ const jwt_secret = process.env.JWT_SECRET || ""
 
 
 interface UserContext {
-    openid: string;
+    id: string;
     email: string;
     name: string;
     picture: string;
@@ -20,14 +20,13 @@ interface TRPCContext {
 
 
 const createContext = async ({ req, res} : CreateExpressContextOptions) => {
-    const authHeader = req.headers.authorization
+    const userInfoToken = req.cookies['userInfoToken']
     let user : TRPCContext["user"] = null
-    if(authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.split(' ')[1] || ""
+    if(userInfoToken) {
         try {
-            const decoded = jwt.verify(token, jwt_secret) as any
+            const decoded = jwt.verify(userInfoToken, jwt_secret) as UserContext
             user = {
-                openid: decoded.sub,
+                id: decoded.id,
                 email: decoded.email,
                 name: decoded.name,
                 picture: decoded.picture

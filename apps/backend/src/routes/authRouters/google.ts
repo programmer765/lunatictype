@@ -14,7 +14,7 @@ interface GoogleIdTokenPayload {
 }
 
 interface AppJWTPayload {
-    openid: string;
+    id: string;
     email: string;
     name: string;
     picture: string;
@@ -48,7 +48,7 @@ const google = router({
 
             
             const user : AppJWTPayload = {
-                openid: decoded.sub,
+                id: decoded.sub,
                 email: decoded.email,
                 name: decoded.name,
                 picture: decoded.picture
@@ -60,7 +60,7 @@ const google = router({
                 httpOnly: true,
                 secure: node_env === "production",
                 sameSite: node_env === "production" ? "strict" : "lax",
-                maxAge: 60 * 60 * 1000 // 1 hour
+                maxAge: jwt_expiry * 1000 // 1 hour
             });
 
             return { success: true }
