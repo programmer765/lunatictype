@@ -4,17 +4,11 @@ import z from 'zod';
 import { TRPCError } from "@trpc/server";
 import axios from "axios";
 import jwt from "jsonwebtoken"
+import UserJWTPayload from "./userJWTPayload";
 
 
 interface GoogleIdTokenPayload {
     sub: string;
-    email: string;
-    name: string;
-    picture: string;
-}
-
-interface AppJWTPayload {
-    id: string;
     email: string;
     name: string;
     picture: string;
@@ -47,11 +41,11 @@ const google = router({
             }
 
             
-            const user : AppJWTPayload = {
+            const user : UserJWTPayload = {
                 id: decoded.sub,
                 email: decoded.email,
                 name: decoded.name,
-                picture: decoded.picture
+                picture: decoded.picture,
             };
             
             const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry})

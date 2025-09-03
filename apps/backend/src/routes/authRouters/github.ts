@@ -4,6 +4,7 @@ import z from 'zod';
 import { TRPCError } from "@trpc/server";
 import axios from "axios";
 import jwt from "jsonwebtoken"
+import UserJWTPayload from "./userJWTPayload";
 
 
 interface GithubIdTokenPayload {
@@ -11,13 +12,6 @@ interface GithubIdTokenPayload {
     email: string;
     name: string;
     avatar_url: string;
-}
-
-interface AppJWTPayload {
-    id: string;
-    email: string;
-    name: string;
-    picture: string;
 }
 
 interface GithubTokenResponse {
@@ -64,7 +58,7 @@ const github = router({
                 },
             });
 
-            const user: AppJWTPayload = {
+            const user: UserJWTPayload = {
                 id: profile.id,
                 email: profile.email,
                 name: profile.name,
@@ -72,8 +66,6 @@ const github = router({
             };
 
             const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry });
-
-            console.log(userInfoToken, user)
 
             ctx.res.cookie("userInfoToken", userInfoToken, {
                 httpOnly: true,

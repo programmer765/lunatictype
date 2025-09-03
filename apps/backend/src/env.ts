@@ -19,3 +19,7 @@ export const github_client_secret = process.env.GITHUB_CLIENT_SECRET ?? "";
 export const github_auth_uri = process.env.GITHUB_AUTH_URI ?? "";
 export const github_token_uri = process.env.GITHUB_TOKEN_URI ?? "";
 export const github_profile_uri = process.env.GITHUB_PROFILE_URI ?? "";
+
+// supabase
+export const supabase_url = process.env.SUPABASE_URL ?? "";
+export const supabase_anon_key = process.env.SUPABASE_ANON_KEY ?? "";
