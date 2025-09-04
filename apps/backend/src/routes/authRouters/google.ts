@@ -89,31 +89,17 @@ const google = router({
             return { success: true }
         }
         catch(error: any) {
-            // console.error(error);
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: JSON.stringify((error.response?.data))
-                        || (error instanceof Error ? error.message : "An unknown error occurred"),
-            });
+            return { success: false, message: error.message };
         }
     }),
-    link: publicProcedure.input(z.object({ redirect_url: z.string().url(), state: z.string().optional() })).mutation(({ input }) => {
+    link: publicProcedure.input(z.object({ redirect_url: z.string().url(), state: z.string() })).mutation(({ input }) => {
         try {
-            const redirect_url = input.redirect_url
-            const state = input.state || "login"
-            // if(redirect_uri === undefined || redirect_uri === null) {
-            //     throw Error("Invalid redirect URI")
-            // }
+            const {redirect_url, state} = input;
             const url = `${google_uri}?client_id=${google_client_id}&redirect_uri=${encodeURIComponent(redirect_url)}&response_type=code&scope=email%20profile%20openid&state=${state}`;
             return { url };
         }
         catch (error) {
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message:
-                    (typeof error === "object" && error !== null && "response" in error && (error as any).response?.data)
-                        || (error instanceof Error ? error.message : "An unknown error occurred"),
-            });
+            return { url: "", message: (error instanceof Error) ? error.message : "An unknown error occurred" };
         }
     })
 });
