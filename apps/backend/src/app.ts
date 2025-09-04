@@ -8,9 +8,6 @@ dotenv.config();
 import appRouter from './routes';
 import createContext from './context';
 import { supabase_anon_key, supabase_url } from './env';
-import Database from './database';
-
-const supabase = createClient<Database>(supabase_url, supabase_anon_key);
 
 const client_url = process.env.CLIENT_URL ?? "*";
 

@@ -1,14 +1,12 @@
 import { router, publicProcedure } from "../../trpc";
 import google from "./google";
 import github from "./github";
+import login from "./login";
+import signup from "./signup";
 
 const authRouter = router({
-    login: publicProcedure.query(() => {
-        return { message: "Login route" };
-    }),
-    register: publicProcedure.query(() => {
-        return { message: "Register route" };
-    }),
+    login: login,
+    signup: signup,
     google: google,
 
     github: github

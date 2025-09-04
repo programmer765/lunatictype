@@ -5,12 +5,13 @@ import { TRPCError } from "@trpc/server";
 import axios from "axios";
 import jwt from "jsonwebtoken"
 import UserJWTPayload from "./userJWTPayload";
-
+import userDb from "../../db/user";
 
 interface GithubIdTokenPayload {
-    id: string;
+    id: number;
     email: string;
     name: string;
+    login: string;
     avatar_url: string;
 }
 
@@ -18,6 +19,11 @@ interface GithubTokenResponse {
     access_token: string;
     token_type: string;
     scope: string;
+}
+
+interface StatePayload {
+    from: string
+    method: string
 }
 
 
@@ -30,6 +36,8 @@ const github = router({
     token: publicProcedure.input(z.object({ code: z.string(), state: z.string() })).mutation( async ({ input, ctx }) => {
         try {
             const { code, state } = input;
+
+            const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
 
             const { data } : { data: GithubTokenResponse } = await axios.post(github_token_uri, {
                 code: code,
@@ -46,10 +54,7 @@ const github = router({
             const { access_token } = data;
 
             if(access_token === null || access_token === undefined || access_token === "") {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: 'Invalid GitHub access token',
-                });
+                return { success: false, message: "Invalid GitHub access token" };
             }
 
             const { data : profile } : { data: GithubIdTokenPayload } = await axios.get(github_profile_uri, {
@@ -62,9 +67,33 @@ const github = router({
                 id: profile.id,
                 email: profile.email,
                 name: profile.name,
+                username: profile.login,
                 picture: profile.avatar_url,
             };
 
+            const User = await userDb.findByGithubId(user.id);
+
+            if(decodedState.from === "login" && User === null) {
+                return { success: false, message: 'User not found' };
+            }
+            if(decodedState.from === "signup") {
+                if(User !== null) {
+                    return { success: false, message: 'User already exists' };
+                }
+
+                await userDb.createUser({
+                    email: user.email,
+                    name: user.name,
+                    username: user.username,
+                    picture: user.picture,
+                    is_github_verified: true,
+                    github_id: user.id,
+                });
+            }
+            else {
+                return { success: false, message: 'Invalid state' };
+            }
+            
             const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry });
 
             ctx.res.cookie("userInfoToken", userInfoToken, {
@@ -76,13 +105,8 @@ const github = router({
 
             return { success: true }
 
-        } catch (error) {
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message:
-                    (typeof error === "object" && error !== null && "response" in error && (error as any).response?.data)
-                        || (error instanceof Error ? error.message : "An unknown error occurred"),
-            });
+        } catch (error: any) {
+            return { success: false, message: error.message };
         }
     })
 });

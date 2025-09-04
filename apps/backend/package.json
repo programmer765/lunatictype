@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "6.15.0",
     "@repo/ui": "workspace:*",
     "@supabase/supabase-js": "^2.57.0",
     "@trpc/server": "^11.4.1",
