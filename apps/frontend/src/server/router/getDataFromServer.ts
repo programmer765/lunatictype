@@ -26,10 +26,20 @@ const useGetGithubTokenLink = () => {
     return useMutation(trpc.auth.github.token.mutationOptions())
 }
 
+const useSignup = () => {
+    return useMutation(trpc.auth.signup.mutationOptions())
+}
+
+const useLogin = () => {
+    return useMutation(trpc.auth.login.mutationOptions())
+}
+
 export {
     useGetRandomWordFromServer,
     useGetGoogleAuthLink,
     useGetGoogleTokenLink,
     useGetGithubAuthLink,
-    useGetGithubTokenLink
+    useGetGithubTokenLink,
+    useSignup,
+    useLogin
 }

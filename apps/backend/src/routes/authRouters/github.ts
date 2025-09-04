@@ -5,12 +5,16 @@ import { TRPCError } from "@trpc/server";
 import axios from "axios";
 import jwt from "jsonwebtoken"
 import UserJWTPayload from "./userJWTPayload";
+import { PrismaClient } from "@prisma/client";
 
+
+const client = new PrismaClient();
 
 interface GithubIdTokenPayload {
-    id: string;
+    id: number;
     email: string;
     name: string;
+    login: string;
     avatar_url: string;
 }
 
@@ -18,6 +22,11 @@ interface GithubTokenResponse {
     access_token: string;
     token_type: string;
     scope: string;
+}
+
+interface StatePayload {
+    from: string
+    method: string
 }
 
 
@@ -30,6 +39,8 @@ const github = router({
     token: publicProcedure.input(z.object({ code: z.string(), state: z.string() })).mutation( async ({ input, ctx }) => {
         try {
             const { code, state } = input;
+
+            const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
 
             const { data } : { data: GithubTokenResponse } = await axios.post(github_token_uri, {
                 code: code,
@@ -46,10 +57,7 @@ const github = router({
             const { access_token } = data;
 
             if(access_token === null || access_token === undefined || access_token === "") {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: 'Invalid GitHub access token',
-                });
+                return { success: false, message: "Invalid GitHub access token" };
             }
 
             const { data : profile } : { data: GithubIdTokenPayload } = await axios.get(github_profile_uri, {
@@ -62,9 +70,39 @@ const github = router({
                 id: profile.id,
                 email: profile.email,
                 name: profile.name,
+                username: profile.login,
                 picture: profile.avatar_url,
             };
 
+            if(decodedState.from === "login") {
+                const User = await client.user.findFirst({
+                    where: {
+                        email: user.email,
+                        github_id: user.id,
+                        is_github_verified: true,
+                    }
+                })
+
+                if(User === null) {
+                    return { success: false, message: 'User not found' };
+                }
+            }
+            else if(decodedState.from === "signup") {
+                await client.user.create({
+                    data: {
+                        email: user.email,
+                        github_id: user.id,
+                        picture: user.picture,
+                        is_github_verified: true,
+                        username: user.name,
+
+                    }
+                })
+            }
+            else {
+                return { success: false, message: 'Invalid state' };
+            }
+            
             const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry });
 
             ctx.res.cookie("userInfoToken", userInfoToken, {

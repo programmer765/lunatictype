@@ -5,13 +5,22 @@ import { TRPCError } from "@trpc/server";
 import axios from "axios";
 import jwt from "jsonwebtoken"
 import UserJWTPayload from "./userJWTPayload";
+import { PrismaClient } from "@prisma/client";
 
+
+const client = new PrismaClient();
 
 interface GoogleIdTokenPayload {
     sub: string;
     email: string;
     name: string;
+    given_name: string;
     picture: string;
+}
+
+interface StatePayload {
+    from: string
+    method: string
 }
 
 const google = router({
@@ -19,7 +28,8 @@ const google = router({
         try {
             console.log("Google callback");
             const { code, state } = input;
-            // return { message: code }
+
+            const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
 
             const { data } = await axios.post(google_token_uri, {
                 code: code,
@@ -34,20 +44,47 @@ const google = router({
             const decoded = jwt.decode(id_token) as GoogleIdTokenPayload | null;
 
             if(decoded === null) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: "Invalid ID token"
-                });
+                return { success: false, message: "Invalid ID token" };
             }
 
             
             const user : UserJWTPayload = {
-                id: decoded.sub,
+                id: parseInt(decoded.sub),
                 email: decoded.email,
                 name: decoded.name,
+                username: decoded.given_name,
                 picture: decoded.picture,
             };
-            
+
+            if(decodedState.from === "login") {
+                const User = await client.user.findFirst({
+                    where: {
+                        email: user.email,
+                        google_id: user.id,
+                        is_google_verified: true,
+                    }
+                })
+
+                if(User === null) {
+                    return { success: false, message: 'User not found' };
+                }
+            }
+            else if(decodedState.from === "signup") {
+                const User = await client.user.create({
+                    data: {
+                        email: user.email,
+                        google_id: user.id,
+                        picture: user.picture,
+                        is_google_verified: true,
+                        username: user.name,
+
+                    }
+                })
+            }
+            else {
+                return { success: false, message: 'Invalid state' };
+            }
+
             const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry})
 
             ctx.res.cookie("userInfoToken", userInfoToken, { 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
 import * as z from 'zod';
-import { useGetGithubTokenLink, useGetGoogleAuthLink, useGetGoogleTokenLink, useGetGithubAuthLink } from '../../server/router/getDataFromServer';
+import { useGetGithubTokenLink, useGetGoogleAuthLink, useGetGoogleTokenLink, useGetGithubAuthLink, useLogin } from '../../server/router/getDataFromServer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Loading from '../Loading';
 
@@ -40,6 +40,9 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
   const githubAuthLink = useGetGithubAuthLink();
   const githubTokenLink = useGetGithubTokenLink();
 
+  // Hooks for login mutation
+  const loginUser = useLogin();
+
   const handleGoogleLogin = async () => {
     const state = JSON.stringify({ from: 'login', method: 'google' });
     setIsLoading(true);
@@ -54,12 +57,21 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
     window.location.href = result.url;
   }
 
+  const handleLogin = async () => {
+    setIsLoading(true);
+    const result = await loginUser.mutateAsync({ email: email, password: password });
+    if (result.success) {
+      navigate('/');
+    } else {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     
     if (code !== null && state !== null) {
-      console.log(code);
       const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
       const from = decodedState.from;
       const method = decodedState.method;
@@ -75,13 +87,14 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
           const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
           isSuccess = success;
         }
+        console.log(isSuccess);
         if (isSuccess === true) {
           // Token fetched successfully
           navigate('/')
         } else {
           // Handle error
           setIsLoading(false);
-          navigate('.', { replace: true })
+          navigate('/v1/auth', { replace: true })
         }
       }
       fetchToken();
@@ -133,6 +146,7 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
           </p>
         </div>
         <button 
+          onClick={handleLogin}
           disabled={!isEmailValid || !isPasswordValid} 
           className='disabled:bg-[#121212] disabled:text-[gray] bg-[#754dbb] text-black font-semibold px-6 py-3 rounded transition-colors duration-200'>
             Log In
