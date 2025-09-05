@@ -20,8 +20,8 @@ model User {
   username            String
   password            String?
   picture             String?
-  google_id           Int?      @unique
-  github_id           Int?      @unique
+  google_id           String?      @unique
+  github_id           String?      @unique
   is_google_verified  Boolean   @default(false)
   is_github_verified  Boolean   @default(false)
   createdAt           DateTime  @default(now())

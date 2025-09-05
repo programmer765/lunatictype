@@ -3,7 +3,7 @@ import argon2 from "argon2";
 
 
 const userDb = {
-    findByGoogleId: async (google_id: number) => {
+    findByGoogleId: async (google_id: string) => {
         try {
             return await client.user.findUnique({
                 where: { google_id: google_id }
@@ -14,7 +14,7 @@ const userDb = {
         }
     },
 
-    findByGithubId: async (github_id: number) => {
+    findByGithubId: async (github_id: string) => {
         try {
             return await client.user.findUnique({
                 where: { github_id: github_id }
@@ -44,8 +44,8 @@ const userDb = {
         picture?: string;
         is_google_verified?: boolean;
         is_github_verified?: boolean;
-        google_id?: number;
-        github_id?: number;
+        google_id?: string;
+        github_id?: string;
     }) => {
         try {
             const passwordHash = userData.password ? await argon2.hash(userData.password) : undefined;

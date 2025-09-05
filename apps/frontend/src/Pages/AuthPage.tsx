@@ -1,19 +1,38 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import Login from '../Components/AuthPageComponents/Login'
 import Signup from '../Components/AuthPageComponents/Signup'
+
+interface decodedState {
+  from: string;
+  method: string;
+}
 
 const AuthPage : React.FC = () => {
 
     const location = useLocation()
-    const [authFrom, setAuthFrom] = useState(location.state?.from === 'login' ? 'login' : 'signup')
+    const [searchParams] = useSearchParams()
+    const state = searchParams.get('state');
+    let from = location.state?.from === undefined ? 'login' : location.state.from as string;
+    sessionStorage.getItem('from') !== null ? from = sessionStorage.getItem('from') as string : null
+    if(state) {
+      const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
+      from = decodedState.from;
+    }
+    sessionStorage.setItem('from', from)
+    const [authFrom, setAuthFrom] = useState(from)
+
+    const handleSetAuthFrom = (value: string) => {
+      setAuthFrom(value);
+      sessionStorage.setItem('from', value);
+    }
 
   return (
     <motion.div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#141220] to-[#000000]">
       <div className='w-full px-32 py-12 h-screen flex items-center justify-center'>
         <div className='w-[40%] flex flex-col bg-black h-full text-white rounded-l-lg shadow-lg'>
-          <div className='flex items-center justify-center py-10'>
+          <div className={`flex items-center justify-center ${authFrom === 'login' ? 'py-10' : 'py-5'}`}>
             <h1 className='text-3xl font-semibold'>
               <Link to="/">LunaticType</Link>
             </h1>
@@ -22,9 +41,9 @@ const AuthPage : React.FC = () => {
             <div className='text-xl pb-2'>Welcome!</div>
             {
               (authFrom === 'login') ? 
-                <Login setAuthFrom={setAuthFrom} />
+                <Login handleSetAuthFrom={handleSetAuthFrom} />
               :
-                <Signup setAuthFrom={setAuthFrom} />
+                <Signup handleSetAuthFrom={handleSetAuthFrom} />
             }
           </div>
         </div>

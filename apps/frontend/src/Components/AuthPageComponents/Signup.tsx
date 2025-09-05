@@ -8,8 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { useGetGithubTokenLink, useGetGoogleAuthLink, useGetGoogleTokenLink, useGetGithubAuthLink, useSignup } from '../../server/router/getDataFromServer';
 
 
+
 interface SignupProps {
-  setAuthFrom: React.Dispatch<React.SetStateAction<string>>;
+  handleSetAuthFrom: (value: string) => void;
 }
 
 interface decodedState {
@@ -18,7 +19,7 @@ interface decodedState {
 }
 
 
-const Signup : React.FC<SignupProps> = ({ setAuthFrom }) => {
+const Signup : React.FC<SignupProps> = ({ handleSetAuthFrom }) => {
 
   const navigate = useNavigate()
 
@@ -72,40 +73,47 @@ const Signup : React.FC<SignupProps> = ({ setAuthFrom }) => {
     }
   }
 
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
   useEffect(() => {
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    
-    if (code !== null && state !== null) {
-      const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
-      const from = decodedState.from;
-      const method = decodedState.method;
-      setAuthFrom(from);
-      const fetchToken = async() => {
-        setIsLoading(true);
-        let isSuccess = false;
-        if(method === 'google') {
-          const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
-          isSuccess = success;
-        }
-        else if(method === 'github') {
-          const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
-          isSuccess = success;
-        }
-        console.log(isSuccess);
-        if (isSuccess === true) {
-          // Token fetched successfully
-          navigate('/')
-        } else {
-          // Handle error
-          setIsLoading(false);
-          navigate('/v1/auth', { replace: true })
-        }
+    if (code === null || state === null) return;
+    // console.log('signup mounted');
+    const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
+    const from = decodedState.from;
+    const method = decodedState.method;
+    const isFetchedOauthToken = sessionStorage.getItem('isOauthTokenFetched');
+    if(isFetchedOauthToken === 'true') return;
+    handleSetAuthFrom(from);
+    if(from !== 'signup') return;
+    // sessionStorage.setItem('fetched_oauth_token', 'false');
+    const fetchToken = async() => {
+      sessionStorage.setItem('isOauthTokenFetched', 'true');
+      setIsLoading(true);
+      let isSuccess = false;
+      if(method === 'google') {
+        const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
+        isSuccess = success;
+        // console.log(message)
       }
-      fetchToken();
+      else if(method === 'github') {
+        console.log("executing github signup")
+        const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
+        isSuccess = success;
+      }
+      // console.log(isSuccess);
+      if (isSuccess === true) {
+        // Token fetched successfully
+        sessionStorage.removeItem('isOauthTokenFetched');
+        navigate('/')
+      } else {
+        // Handle error
+        setIsLoading(false);
+        navigate('/v1/auth', { replace: true })
+      }
     }
+    fetchToken();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [code]);
 
   return (
     <div>
@@ -130,10 +138,10 @@ const Signup : React.FC<SignupProps> = ({ setAuthFrom }) => {
         </div>
         <div className='flex flex-col space-y-2'>
           <div className='flex flex-col space-y-1'>
-            <span className='text-sm'>Email</span>
+            <span className='text-sm'>Username</span>
             <input 
-              type="email" 
-              placeholder='Your email here' 
+              type="text" 
+              placeholder='Enter username' 
               onChange={(e) => setUsername(e.target.value)}
               className='peer bg-black text-white px-4 py-3 border border-[#2a2a2a] rounded focus:outline-none transition-colors duration-200 text-sm' />
           </div>
@@ -141,7 +149,7 @@ const Signup : React.FC<SignupProps> = ({ setAuthFrom }) => {
             <span className='text-sm'>Email</span>
             <input 
               type="email" 
-              placeholder='Your email here' 
+              placeholder='abc@example.com' 
               onChange={(e) => setEmail(e.target.value)}
               className='peer bg-black text-white px-4 py-3 border border-[#2a2a2a] rounded focus:outline-none transition-colors duration-200 text-sm' />
           </div>
@@ -149,7 +157,7 @@ const Signup : React.FC<SignupProps> = ({ setAuthFrom }) => {
             <span className='text-sm'>Password</span>
             <input 
               type="password" 
-              placeholder='Your password here' 
+              placeholder='******' 
               onChange={(e) => setPassword(e.target.value)}
               className='peer bg-black text-white px-4 py-3 border border-[#2a2a2a] rounded focus:outline-none transition-colors duration-200 text-sm' />
             <p className="invisible peer-invalid:visible text-sm text-red-500">
@@ -167,7 +175,7 @@ const Signup : React.FC<SignupProps> = ({ setAuthFrom }) => {
         </div>
         <div className='flex justify-center pt-4'>
           <p className="text-sm text-gray-500">
-            Already have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => setAuthFrom('login')}>Log in</span>
+            Already have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => handleSetAuthFrom('login')}>Log in</span>
           </p>
         </div>
     </div>

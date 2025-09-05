@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Loading from '../Loading';
 
 interface LoginProps {
-  setAuthFrom: React.Dispatch<React.SetStateAction<string>>;
+  handleSetAuthFrom: (value: string) => void;
 }
 
 interface decodedState {
@@ -16,7 +16,7 @@ interface decodedState {
 }
 
 
-const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
+const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
   
   const navigate = useNavigate()
 
@@ -67,38 +67,49 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
     }
   }
 
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+
   useEffect(() => {
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    
-    if (code !== null && state !== null) {
-      const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
-      const from = decodedState.from;
-      const method = decodedState.method;
-      setAuthFrom(from);
-      const fetchToken = async() => {
-        setIsLoading(true);
-        let isSuccess = false;
-        if(method === 'google') {
-          const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
-          isSuccess = success;
-        }
-        else if(method === 'github') {
-          const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
-          isSuccess = success;
-        }
-        console.log(isSuccess);
-        if (isSuccess === true) {
-          // Token fetched successfully
-          navigate('/')
-        } else {
-          // Handle error
-          setIsLoading(false);
-          navigate('/v1/auth', { replace: true })
-        }
+    // check if user is already logged in
+
+
+    if(code === null || state === null) return;
+    // console.log("login mounted")
+    const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
+    const from = decodedState.from;
+    const method = decodedState.method;
+    const isFetchedOauthToken = sessionStorage.getItem('isOauthTokenFetched');
+    if(isFetchedOauthToken === 'true') return;
+    handleSetAuthFrom(from);
+    if(from !== 'login') return;
+    const fetchToken = async() => {
+      sessionStorage.setItem('isOauthTokenFetched', 'true');
+      setIsLoading(true);
+      let isSuccess = false;
+      if(method === 'google') {
+        const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
+        isSuccess = success;
+        // console.log(message)
       }
-      fetchToken();
+      else if(method === 'github') {
+        console.log("executing github login")
+        const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
+        isSuccess = success;
+        // console.log(message)
+      }
+      // console.log(isSuccess);
+      if (isSuccess === true) {
+        // Token fetched successfully
+        sessionStorage.removeItem('isOauthTokenFetched');
+        navigate('/')
+      } else {
+        // Handle error
+        setIsLoading(false);
+        navigate('/v1/auth', { replace: true })
+      }
     }
+    fetchToken();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -128,7 +139,7 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
           <span className='text-sm'>Email</span>
           <input 
             type="email" 
-            placeholder='Your email here' 
+            placeholder='abc@example.com' 
             onChange={(e) => setEmail(e.target.value)}
             className='peer bg-black text-white px-4 py-3 border border-[#2a2a2a] rounded focus:outline-none transition-colors duration-200 text-sm' />
         </div>
@@ -136,7 +147,7 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
           <span className='text-sm'>Password</span>
           <input 
             type="password" 
-            placeholder='Your password here' 
+            placeholder='******' 
             onChange={(e) => setPassword(e.target.value)}
             className='peer bg-black text-white px-4 py-3 border border-[#2a2a2a] rounded focus:outline-none transition-colors duration-200 text-sm' />
           <p className="invisible peer-invalid:visible text-sm text-red-500">
@@ -154,7 +165,7 @@ const Login : React.FC<LoginProps> = ({ setAuthFrom }) => {
       </div>
       <div className='flex justify-center pt-4'>
         <p className="text-sm text-gray-500">
-          Don't have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => setAuthFrom('signup')}>Sign up</span>
+          Don't have an account? <span className="text-[#754dbb] underline cursor-pointer" onClick={() => handleSetAuthFrom('signup')}>Sign up</span>
         </p>
       </div>
     </div>

@@ -35,6 +35,7 @@ const github = router({
     }),
     token: publicProcedure.input(z.object({ code: z.string(), state: z.string() })).mutation( async ({ input, ctx }) => {
         try {
+            console.log('github token');
             const { code, state } = input;
 
             const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
@@ -64,7 +65,7 @@ const github = router({
             });
 
             const user: UserJWTPayload = {
-                id: profile.id,
+                id: String(profile.id),
                 email: profile.email,
                 name: profile.name,
                 username: profile.login,
@@ -90,7 +91,7 @@ const github = router({
                     github_id: user.id,
                 });
             }
-            else {
+            if(decodedState.from !== "signup" && decodedState.from !== "login") {
                 return { success: false, message: 'Invalid state' };
             }
             
@@ -103,9 +104,10 @@ const github = router({
                 maxAge: jwt_expiry * 1000 // 1 hour
             });
 
-            return { success: true }
+            return { success: true, message: "Authentication successful" };
 
         } catch (error: any) {
+            console.log(error.response.data);
             return { success: false, message: error.message };
         }
     })

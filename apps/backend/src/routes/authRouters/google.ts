@@ -23,7 +23,7 @@ interface StatePayload {
 const google = router({
     token: publicProcedure.input(z.object({ code: z.string(), state: z.string() })).mutation( async({ input, ctx }) => {
         try {
-            console.log("Google callback");
+            // console.log("Google token");
             const { code, state } = input;
 
             const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
@@ -46,7 +46,7 @@ const google = router({
 
             
             const user : UserJWTPayload = {
-                id: parseInt(decoded.sub),
+                id: decoded.sub,
                 email: decoded.email,
                 name: decoded.name,
                 username: decoded.given_name,
@@ -86,7 +86,7 @@ const google = router({
                 maxAge: jwt_expiry * 1000 // 1 hour
             });
 
-            return { success: true }
+            return { success: true, message: "Authentication successful" }
         }
         catch(error: any) {
             return { success: false, message: error.message };
