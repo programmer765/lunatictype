@@ -1,4 +1,4 @@
-import { router, publicProcedure } from "../../trpc";
+import { router, publicProcedure, protectedProcedure } from "../../trpc";
 import google from "./google";
 import github from "./github";
 import login from "./login";
@@ -6,10 +6,19 @@ import signup from "./signup";
 
 const authRouter = router({
     login: login,
+
     signup: signup,
+
     google: google,
 
-    github: github
+    github: github,
+
+    isLoggedIn: protectedProcedure.query(async ({ ctx }) => {
+        if(ctx.user) {
+            return { success: true, message: "User is logged in" }
+        }
+        return { success: false, message: "User is not logged in" };
+    })
 
 })
 
