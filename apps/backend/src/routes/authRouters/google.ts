@@ -77,14 +77,7 @@ const google = router({
                 return { success: false, message: 'Invalid state' };
             }
 
-            const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry})
-
-            ctx.res.cookie("userInfoToken", userInfoToken, { 
-                httpOnly: true,
-                secure: node_env === "production",
-                sameSite: node_env === "production" ? "strict" : "lax",
-                maxAge: jwt_expiry * 1000 // 1 hour
-            });
+            userDb.createCookie(ctx, user)
 
             return { success: true, message: "Authentication successful" }
         }

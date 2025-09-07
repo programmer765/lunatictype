@@ -74,9 +74,14 @@ const github = router({
 
             const User = await userDb.findByGithubId(user.id);
 
+            if(decodedState.from !== "signup" && decodedState.from !== "login") {
+                return { success: false, message: 'Invalid state' };
+            }
+
             if(decodedState.from === "login" && User === null) {
                 return { success: false, message: 'User not found' };
             }
+
             if(decodedState.from === "signup") {
                 if(User !== null) {
                     return { success: false, message: 'User already exists' };
@@ -91,18 +96,9 @@ const github = router({
                     github_id: user.id,
                 });
             }
-            if(decodedState.from !== "signup" && decodedState.from !== "login") {
-                return { success: false, message: 'Invalid state' };
-            }
             
-            const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry });
 
-            ctx.res.cookie("userInfoToken", userInfoToken, {
-                httpOnly: true,
-                secure: node_env === "production",
-                sameSite: node_env === "production" ? "strict" : "lax",
-                maxAge: jwt_expiry * 1000 // 1 hour
-            });
+            userDb.createCookie(ctx, user)
 
             return { success: true, message: "Authentication successful" };
 

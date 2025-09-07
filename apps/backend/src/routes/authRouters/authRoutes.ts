@@ -15,7 +15,7 @@ const authRouter = router({
 
     isLoggedIn: protectedProcedure.query(async ({ ctx }) => {
         if(ctx.user) {
-            return { success: true, message: "User is logged in" }
+            return { success: true, message: "User is logged in", user: ctx.user }
         }
         return { success: false, message: "User is not logged in" };
     })

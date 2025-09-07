@@ -1,5 +1,9 @@
+import { Context } from "../context";
 import client from "../prisma/client";
 import argon2 from "argon2";
+import { node_env, jwt_expiry, jwt_secret, userInfoTokenName } from "../env";
+import UserJWTPayload from "../routes/authRouters/userJWTPayload";
+import jwt from "jsonwebtoken"
 
 
 const userDb = {
@@ -56,6 +60,10 @@ const userDb = {
                 data: userData,
                 select: {
                     id: true,
+                    name: true,
+                    username: true,
+                    email: true,
+                    picture: true
                 }
             });
 
@@ -77,6 +85,36 @@ const userDb = {
         } catch (error: any) {
             console.error("Error verifying password:", error.message);
             throw new Error("Failed to verify password");
+        }
+    },
+
+    createCookie: (ctx: Context, user: UserJWTPayload) => {
+        try {
+            const userInfoToken = (jwt as any).sign(user, jwt_secret, { expiresIn: jwt_expiry})
+
+            ctx.res.cookie(userInfoTokenName, userInfoToken, { 
+                httpOnly: true,
+                secure: node_env === "production",
+                sameSite: node_env === "production" ? "strict" : "lax",
+                maxAge: jwt_expiry * 1000 // 1 day
+            });
+        }
+        catch(err : any) {
+            console.log(err.message)
+            throw new Error("Cannot create cookie")
+        }
+    },
+
+    deleteCookie: (ctx: Context, cookieName : string) => {
+        try {
+            ctx.res.clearCookie(cookieName, {
+                httpOnly: true,
+                secure: node_env === "production",
+                sameSite: node_env === "production" ? "strict" : "lax",
+            })
+        }
+        catch(err : any) {
+            console.log(err.message)
         }
     }
 }

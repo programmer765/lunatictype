@@ -23,3 +23,6 @@ export const github_profile_uri = process.env.GITHUB_PROFILE_URI ?? "";
 // supabase
 export const supabase_url = process.env.SUPABASE_URL ?? "";
 export const supabase_anon_key = process.env.SUPABASE_ANON_KEY ?? "";
+
+//user info token name
+export const userInfoTokenName = process.env.USER_INFO_TOKEN_NAME ?? "";
