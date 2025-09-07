@@ -71,9 +71,6 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
   const state = searchParams.get('state');
 
   useEffect(() => {
-    // check if user is already logged in
-
-
     if(code === null || state === null) return;
     // console.log("login mounted")
     const decodedState : decodedState = JSON.parse(decodeURIComponent(state));

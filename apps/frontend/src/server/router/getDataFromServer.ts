@@ -34,6 +34,14 @@ const useLogin = () => {
     return useMutation(trpc.auth.login.mutationOptions())
 }
 
+const useIsLoggedIn = () => {
+    return useQuery(trpc.auth.isLoggedIn.queryOptions(undefined, {
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        staleTime: Infinity
+    }))
+}
+
 export {
     useGetRandomWordFromServer,
     useGetGoogleAuthLink,
@@ -41,5 +49,6 @@ export {
     useGetGithubAuthLink,
     useGetGithubTokenLink,
     useSignup,
-    useLogin
+    useLogin,
+    useIsLoggedIn
 }

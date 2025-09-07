@@ -35,6 +35,9 @@ const createContext = async ({ req, res} : CreateExpressContextOptions) => {
             console.error(error)
         }
     }
+    else {
+        console.log('token not found')
+    }
 
     return { req, res, user}
 }

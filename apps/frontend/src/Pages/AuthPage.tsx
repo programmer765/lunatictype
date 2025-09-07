@@ -1,8 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import Login from '../Components/AuthPageComponents/Login'
 import Signup from '../Components/AuthPageComponents/Signup'
+import { useIsLoggedIn } from '../server/router/getDataFromServer'
+import Loading from '../Components/Loading'
 
 interface decodedState {
   from: string;
@@ -11,46 +13,70 @@ interface decodedState {
 
 const AuthPage : React.FC = () => {
 
-    const location = useLocation()
-    const [searchParams] = useSearchParams()
-    const state = searchParams.get('state');
-    let from = location.state?.from === undefined ? 'login' : location.state.from as string;
-    sessionStorage.getItem('from') !== null ? from = sessionStorage.getItem('from') as string : null
-    if(state) {
-      const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
-      from = decodedState.from;
-    }
-    sessionStorage.setItem('from', from)
-    const [authFrom, setAuthFrom] = useState(from)
+  const navigate = useNavigate()
 
-    const handleSetAuthFrom = (value: string) => {
-      setAuthFrom(value);
-      sessionStorage.setItem('from', value);
-    }
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const state = searchParams.get('state');
+  let from = location.state?.from === undefined ? 'login' : location.state.from as string;
+  sessionStorage.getItem('from') !== null ? from = sessionStorage.getItem('from') as string : null
+  if(state) {
+    const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
+    from = decodedState.from;
+  }
+  sessionStorage.setItem('from', from)
+  const [authFrom, setAuthFrom] = useState(from)
+
+  const handleSetAuthFrom = (value: string) => {
+    setAuthFrom(value);
+    sessionStorage.setItem('from', value);
+  }
+
+  const [isLoading, setIsLoading] = useState(false);
+  // Hook to check if user is logged in
+  const isLoggedIn = useIsLoggedIn();
+
+  useEffect(() => {
+    setIsLoading(true);
+    const checkLoggedIn = () => {
+      if (isLoggedIn.data?.success === true) {
+        navigate('/');
+      }
+      if(isLoggedIn.error) {
+        console.log(isLoggedIn.error.message)
+      }
+      setIsLoading(false);
+    };
+    checkLoggedIn();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn.isLoading]);
 
   return (
-    <motion.div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#141220] to-[#000000]">
-      <div className='w-full px-32 py-12 h-screen flex items-center justify-center'>
-        <div className='w-[40%] flex flex-col bg-black h-full text-white rounded-l-lg shadow-lg'>
-          <div className={`flex items-center justify-center ${authFrom === 'login' ? 'py-10' : 'py-5'}`}>
-            <h1 className='text-3xl font-semibold'>
-              <Link to="/">LunaticType</Link>
-            </h1>
+    <motion.div>
+      {isLoading && <Loading />}
+      <motion.div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#141220] to-[#000000]">
+        <div className='w-full px-[1%] py-12 h-screen flex items-center justify-center'>
+          <div className='w-[35%] lg:w-[30%] flex flex-col bg-black h-full text-white rounded-l-lg shadow-lg'>
+            <div className={`flex items-center justify-center ${authFrom === 'login' ? 'py-10' : 'py-5'}`}>
+              <h1 className='text-3xl font-semibold'>
+                <Link to="/">LunaticType</Link>
+              </h1>
+            </div>
+            <div className='flex flex-col px-[12%] pt-[2%]'>
+              <div className='text-xl pb-2'>Welcome!</div>
+              {
+                (authFrom === 'login') ? 
+                  <Login handleSetAuthFrom={handleSetAuthFrom} />
+                :
+                  <Signup handleSetAuthFrom={handleSetAuthFrom} />
+              }
+            </div>
           </div>
-          <div className='flex flex-col px-20 pt-5'>
-            <div className='text-xl pb-2'>Welcome!</div>
-            {
-              (authFrom === 'login') ? 
-                <Login handleSetAuthFrom={handleSetAuthFrom} />
-              :
-                <Signup handleSetAuthFrom={handleSetAuthFrom} />
-            }
-          </div>
-        </div>
-        <div className='w-[50%] h-full bg-gradient-to-br from-[#100E1C] via-[#181626] to-[#000000] rounded-r-lg shadow-lg p-8'>
+          <div className='w-[50%] h-full bg-gradient-to-br from-[#100E1C] via-[#181626] to-[#000000] rounded-r-lg shadow-lg p-8'>
 
+          </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
