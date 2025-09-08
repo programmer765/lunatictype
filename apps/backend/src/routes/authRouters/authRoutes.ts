@@ -17,7 +17,7 @@ const authRouter = router({
         if(ctx.user) {
             return { success: true, message: "User is logged in", user: ctx.user }
         }
-        return { success: false, message: "User is not logged in" };
+        return { success: false, message: "User is not logged in", user: null };
     })
 
 })

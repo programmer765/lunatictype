@@ -27,6 +27,9 @@ const google = router({
             const { code, state } = input;
 
             const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
+            if(decodedState.from !== "signup" && decodedState.from !== "login") {
+                return { success: false, message: 'Invalid state' };
+            }
 
             const { data } = await axios.post(google_token_uri, {
                 code: code,
@@ -64,7 +67,7 @@ const google = router({
                     return { success: false, message: 'User already exists' };
                 }
 
-                await userDb.createUser({
+                const userCreated = await userDb.createUser({
                     email: user.email,
                     name: user.name,
                     username: user.username,
@@ -72,9 +75,8 @@ const google = router({
                     is_google_verified: true,
                     google_id: user.id,
                 })
-            }
-            else {
-                return { success: false, message: 'Invalid state' };
+
+                user.id = userCreated.id.toString()
             }
 
             userDb.createCookie(ctx, user)

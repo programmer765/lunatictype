@@ -39,6 +39,10 @@ const github = router({
             const { code, state } = input;
 
             const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
+            
+            if(decodedState.from !== "signup" && decodedState.from !== "login") {
+                return { success: false, message: 'Invalid state' };
+            }
 
             const { data } : { data: GithubTokenResponse } = await axios.post(github_token_uri, {
                 code: code,
@@ -74,10 +78,6 @@ const github = router({
 
             const User = await userDb.findByGithubId(user.id);
 
-            if(decodedState.from !== "signup" && decodedState.from !== "login") {
-                return { success: false, message: 'Invalid state' };
-            }
-
             if(decodedState.from === "login" && User === null) {
                 return { success: false, message: 'User not found' };
             }
@@ -87,7 +87,7 @@ const github = router({
                     return { success: false, message: 'User already exists' };
                 }
 
-                await userDb.createUser({
+                const userCreated = await userDb.createUser({
                     email: user.email,
                     name: user.name,
                     username: user.username,
@@ -95,8 +95,9 @@ const github = router({
                     is_github_verified: true,
                     github_id: user.id,
                 });
+
+                user.id = userCreated.id.toString()
             }
-            
 
             userDb.createCookie(ctx, user)
 
