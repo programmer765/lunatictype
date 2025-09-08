@@ -38,7 +38,8 @@ const useIsLoggedIn = () => {
     return useQuery(trpc.auth.isLoggedIn.queryOptions(undefined, {
         refetchOnMount: false,
         refetchOnWindowFocus: false,
-        staleTime: Infinity
+        staleTime: Infinity,
+        retry: 0,
     }))
 }
 

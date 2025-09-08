@@ -76,8 +76,8 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
     const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
     const from = decodedState.from;
     const method = decodedState.method;
-    const isFetchedOauthToken = sessionStorage.getItem('isOauthTokenFetched');
-    if(isFetchedOauthToken === 'true') return;
+    const isOauthTokenFetched = sessionStorage.getItem('isOauthTokenFetched');
+    if(isOauthTokenFetched === 'true') return;
     handleSetAuthFrom(from);
     if(from !== 'login') return;
     const fetchToken = async() => {
@@ -90,7 +90,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
         // console.log(message)
       }
       else if(method === 'github') {
-        console.log("executing github login")
+        // console.log("executing github login")
         const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
         isSuccess = success;
         // console.log(message)
@@ -102,6 +102,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
         navigate('/')
       } else {
         // Handle error
+        sessionStorage.setItem('isOauthTokenFetched', 'false')
         setIsLoading(false);
         navigate('/v1/auth', { replace: true })
       }

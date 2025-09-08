@@ -38,6 +38,7 @@ const AuthPage : React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
+    isLoggedIn.refetch()
     const checkLoggedIn = () => {
       if (isLoggedIn.data?.success === true) {
         navigate('/');

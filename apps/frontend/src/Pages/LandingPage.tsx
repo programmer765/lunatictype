@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useEffect } from "react";
 import {Navbar} from "../Components/Navbar.tsx";
 import { motion } from "framer-motion";
 import PracticeBtn from "../Components/PracticeBtn.tsx";
@@ -6,8 +6,11 @@ import PlayOnlineBtn from "../Components/PlayOnlineBtn.tsx";
 import { useState } from "react";
 import Practice from "./Practice.tsx";
 import PlayOnline from "./PlayOnline.tsx";
+import { useIsLoggedIn } from "../server/router/getDataFromServer.ts";
+import Loading from "../Components/Loading.tsx";
 
 const LandingPage : React.FC = () => {
+
   const [isPractice, setIsPractice] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const container = {
@@ -39,43 +42,64 @@ const LandingPage : React.FC = () => {
     setIsOnline(online)
   }
 
+  const [isLoading, setIsLoading] = useState(false);
+  // Hook to check if user is logged in
+  const isLoggedIn = useIsLoggedIn();
+
+  useEffect(() => {
+    setIsLoading(true);
+    isLoggedIn.refetch()
+    const checkLoggedIn = () => {
+      // console.log(isLoggedIn.data?.user)
+      if(isLoggedIn.error) {
+        console.log(isLoggedIn.error.message)
+      }
+      setIsLoading(false);
+    };
+    checkLoggedIn();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn.isLoading]);
+
   return (
-    <motion.div className='h-screen bg-[#202020]'>
-      <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }}>
-        <motion.div className='' variants={item}>
-            <Navbar isPractice={isPractice} setIsPractice={setIsPractice} isOnline={isOnline} setIsOnline={setIsOnline} />
-        </motion.div>
-        {
-          isPractice ? 
-          ( 
-            <div>
-              <Practice />
-            </div>
-          )
-          :
-          isOnline ? 
-          (
-            <div>
-              <PlayOnline />
-            </div>
-          )
-          :
-          (
-          <motion.div className="flex flex-col items-center gap-y-40" variants={item}>
-            <motion.div className="pt-16 text-[#a4b5a3] text-6xl font-serif text-center" variants={item}>
-                KNOW YOUR KEYBOARD BETTER!!
-            </motion.div>
-            <motion.div className="flex gap-x-16">
-              <div onClick={() => updatePlayType(true, false)}>
-                <PracticeBtn />
-              </div>
-              <div onClick={() => updatePlayType(false, true)}>
-                <PlayOnlineBtn />
-              </div>
-            </motion.div>
+    <motion.div>
+      { isLoading && <Loading />}
+      <motion.div className='h-screen bg-[#202020]'>
+        <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }}>
+          <motion.div className='' variants={item}>
+              <Navbar isPractice={isPractice} setIsPractice={setIsPractice} isOnline={isOnline} setIsOnline={setIsOnline} />
           </motion.div>
-          )
-        }
+          {
+            isPractice ? 
+            ( 
+              <div>
+                <Practice />
+              </div>
+            )
+            :
+            isOnline ? 
+            (
+              <div>
+                <PlayOnline />
+              </div>
+            )
+            :
+            (
+            <motion.div className="flex flex-col items-center gap-y-40" variants={item}>
+              <motion.div className="pt-16 text-[#a4b5a3] text-6xl font-serif text-center" variants={item}>
+                  KNOW YOUR KEYBOARD BETTER!!
+              </motion.div>
+              <motion.div className="flex gap-x-16">
+                <div onClick={() => updatePlayType(true, false)}>
+                  <PracticeBtn />
+                </div>
+                <div onClick={() => updatePlayType(false, true)}>
+                  <PlayOnlineBtn />
+                </div>
+              </motion.div>
+            </motion.div>
+            )
+          }
+        </motion.div>
       </motion.div>
     </motion.div>
   )
