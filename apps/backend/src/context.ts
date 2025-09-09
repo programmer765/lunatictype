@@ -9,6 +9,7 @@ interface UserContext {
     email: string;
     name: string;
     picture: string;
+    username: string;
 }
 
 
@@ -29,7 +30,8 @@ const createContext = async ({ req, res} : CreateExpressContextOptions) => {
                 id: decoded.id,
                 email: decoded.email,
                 name: decoded.name,
-                picture: decoded.picture
+                picture: decoded.picture,
+                username: decoded.username
             }
         } catch (error) {
             console.error(error)
