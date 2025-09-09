@@ -3,12 +3,15 @@ import LoginButton from "./LoginButton";
 import SignUpButton from "./SignUpButton";
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import { FaHome } from "react-icons/fa";
+import User from "../types/User";
+import Profile from "./Profile/Profile";
 
 interface NavbarProps {
     isPractice: boolean;
     isOnline: boolean;
     setIsPractice: (isPractice: boolean) => void;
     setIsOnline: (isOnline: boolean) => void;
+    user?: User
 }
 
 const handleLunaticTypeClick = (setIsPractice: (isPractice: boolean) => void, setIsOnline: (isOnline: boolean) => void) => {
@@ -16,7 +19,7 @@ const handleLunaticTypeClick = (setIsPractice: (isPractice: boolean) => void, se
     setIsOnline(false);
 }
 
-export const Navbar : React.FC<NavbarProps> = ({ isPractice, isOnline, setIsPractice, setIsOnline }) => {
+export const Navbar : React.FC<NavbarProps> = ({ isPractice, isOnline, setIsPractice, setIsOnline, user }) => {
     return (
         <div className="py-5 text-white px-5">
             <div className="flex justify-between">
@@ -33,14 +36,21 @@ export const Navbar : React.FC<NavbarProps> = ({ isPractice, isOnline, setIsPrac
                         <FaHome className="text-2xl cursor-pointer" />
                     </div>
                 </div>
-                <div className="flex">
-                    <div className='px-2'>
-                        <LoginButton />
-                    </div>
-                    <div className='px-2'>
-                        <SignUpButton />
-                    </div>
-                </div>
+                {
+                    user !== null && user !== undefined ?
+                    <Profile user={user} />
+                    : 
+                    (
+                        <div className="flex">
+                            <div className='px-2'>
+                                <LoginButton />
+                            </div>
+                            <div className='px-2'>
+                                <SignUpButton />
+                            </div>
+                        </div>
+                    )
+                }
             </div>
         </div>
     );

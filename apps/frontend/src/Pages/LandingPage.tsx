@@ -1,13 +1,14 @@
 import { useEffect } from "react";
-import {Navbar} from "../Components/Navbar.tsx";
+import {Navbar} from "../Components/Navbar";
 import { motion } from "framer-motion";
-import PracticeBtn from "../Components/PracticeBtn.tsx";
-import PlayOnlineBtn from "../Components/PlayOnlineBtn.tsx";
+import PracticeBtn from "../Components/PracticeBtn";
+import PlayOnlineBtn from "../Components/PlayOnlineBtn";
 import { useState } from "react";
-import Practice from "./Practice.tsx";
-import PlayOnline from "./PlayOnline.tsx";
-import { useIsLoggedIn } from "../server/router/getDataFromServer.ts";
-import Loading from "../Components/Loading.tsx";
+import Practice from "./Practice";
+import PlayOnline from "./PlayOnline";
+import { useIsLoggedIn } from "../server/router/getDataFromServer";
+import Loading from "../Components/Loading";
+import User from "../types/User";
 
 const LandingPage : React.FC = () => {
 
@@ -36,6 +37,7 @@ const LandingPage : React.FC = () => {
       }
     }
   };
+  
 
   const updatePlayType = (practice: boolean, online: boolean) => {
     setIsPractice(practice)
@@ -45,12 +47,16 @@ const LandingPage : React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   // Hook to check if user is logged in
   const isLoggedIn = useIsLoggedIn();
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     setIsLoading(true);
     isLoggedIn.refetch()
     const checkLoggedIn = () => {
       // console.log(isLoggedIn.data?.user)
+      if(isLoggedIn.data?.user !== null && isLoggedIn.data?.user !== undefined) {
+        setUser(isLoggedIn.data?.user)
+      }
       if(isLoggedIn.error) {
         console.log(isLoggedIn.error.message)
       }
@@ -66,7 +72,12 @@ const LandingPage : React.FC = () => {
       <motion.div className='h-screen bg-[#202020]'>
         <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }}>
           <motion.div className='' variants={item}>
-              <Navbar isPractice={isPractice} setIsPractice={setIsPractice} isOnline={isOnline} setIsOnline={setIsOnline} />
+              <Navbar 
+                isPractice={isPractice} 
+                setIsPractice={setIsPractice} 
+                isOnline={isOnline} setIsOnline={setIsOnline} 
+                {...(user !== null && user !== undefined && {user: user})} 
+              />
           </motion.div>
           {
             isPractice ? 
