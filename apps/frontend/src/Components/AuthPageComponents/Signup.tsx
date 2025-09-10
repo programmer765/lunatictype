@@ -104,7 +104,7 @@ const Signup : React.FC<SignupProps> = ({ handleSetAuthFrom }) => {
       if (isSuccess === true) {
         // Token fetched successfully
         sessionStorage.removeItem('isOauthTokenFetched');
-        navigate('/')
+        window.location.href = '/'
       } else {
         // Handle error
         setIsLoading(false);

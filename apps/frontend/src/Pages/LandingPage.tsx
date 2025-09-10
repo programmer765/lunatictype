@@ -51,9 +51,7 @@ const LandingPage : React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    isLoggedIn.refetch()
     const checkLoggedIn = () => {
-      // console.log(isLoggedIn.data?.user)
       if(isLoggedIn.data?.user !== null && isLoggedIn.data?.user !== undefined) {
         setUser(isLoggedIn.data?.user)
       }
