@@ -99,7 +99,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
       if (isSuccess === true) {
         // Token fetched successfully
         sessionStorage.removeItem('isOauthTokenFetched');
-        navigate('/')
+        window.location.href = '/'
       } else {
         // Handle error
         sessionStorage.setItem('isOauthTokenFetched', 'false')
