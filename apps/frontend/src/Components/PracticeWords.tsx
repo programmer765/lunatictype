@@ -1,20 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGetRandomWordFromServer } from '../server/router/getDataFromServer'
+import Loading from './Loading'
 
 const PracticeWords = () => {
 
-  const words = useGetRandomWordFromServer()
+  const data = useGetRandomWordFromServer()
 
+  
   const [currentSentence, setCurrentSentence] = useState<string>('')
   const [wordSentence, setWordSentence] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(true)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const chars = [...wordSentence]
   
   useEffect(() => {
+    if(data.isLoading === true) {
+      setLoading(true)
+      return
+    }
+    if(data.isError === true) {
+      setLoading(false)
+      return
+    }
+    const words: string[] = data.data ? data.data : [""]
+    setLoading(false)
     const sentence : string = words.join(' ')
 
     setWordSentence(sentence)
-  }, [words])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.isLoading])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -46,6 +60,7 @@ const PracticeWords = () => {
 
   return (
     <div>
+      { loading && <Loading />}
       <div className='relative flex flex-wrap text-justify'>
         <div className='mx-2 text-4xl tracking-wider'>
           {
