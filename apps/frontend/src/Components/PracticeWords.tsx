@@ -7,15 +7,15 @@ const PracticeWords = () => {
   const data = useGetRandomWordFromServer()
 
   
-  const [currentSentence, setCurrentSentence] = useState<string>('')
-  const [wordSentence, setWordSentence] = useState<string>('')
+  const [inputSentence, setInputSentence] = useState<string>('')
+  const [defaultSentence, setDefaultSentence] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const [cursorPosition, setCursorPosition] = useState<{x: number, y: number}>({x: 0, y: 0})
 
   const textRef = useRef<HTMLDivElement>(null)
   const characterRef = useRef<(HTMLSpanElement | null)[]>([])
 
-  const chars = useMemo(() => [...wordSentence], [wordSentence])
+  const chars = useMemo(() => [...defaultSentence], [defaultSentence])
 
   const updateCursorPosition = useCallback((index : number) => {
     if(characterRef.current[index] === null || textRef.current === null) return
@@ -48,22 +48,22 @@ const PracticeWords = () => {
     setLoading(false)
     const sentence : string = words.join(' ')
 
-    setWordSentence(sentence)
-    setCurrentSentence('')
+    setDefaultSentence(sentence)
+    setInputSentence('')
     updateCursorPosition(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.isLoading])
 
   useEffect(() => {
-    updateCursorPosition(currentSentence.length)
-  }, [currentSentence.length, updateCursorPosition, chars])
+    updateCursorPosition(inputSentence.length)
+  }, [inputSentence.length, updateCursorPosition, chars])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      let newSentence = currentSentence
+      let newSentence = inputSentence
       if(e.key.length === 1) {
         newSentence += e.key
-        setCurrentSentence(newSentence)
+        setInputSentence(newSentence)
         // console.log(newSentence)
       }
       else if(e.key === 'Backspace') {
@@ -73,7 +73,7 @@ const PracticeWords = () => {
           chars.splice(index, 1)
         }
         newSentence = newSentence.slice(0, -1);
-        setCurrentSentence(newSentence)
+        setInputSentence(newSentence)
       }
     }
 
@@ -82,7 +82,7 @@ const PracticeWords = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [currentSentence, chars])
+  }, [inputSentence, chars])
 
 
 
@@ -101,18 +101,18 @@ const PracticeWords = () => {
               let colorClass = 'text-gray-500'
               let displayChar = char
 
-              if(index < currentSentence.length) {
+              if(index < inputSentence.length) {
                 if(char == ' ') {
-                  if(currentSentence[index] !== ' ') {
+                  if(inputSentence[index] !== ' ') {
                     colorClass = 'text-red-500'
                     chars.splice(index, 0, '_') // Add a placeholder for misstyped space
-                    displayChar = currentSentence[index]
+                    displayChar = inputSentence[index]
                   } 
                 }
-                else colorClass = (char === currentSentence[index]) ? 'text-white' : 'text-red-500' 
+                else colorClass = (char === inputSentence[index]) ? 'text-white' : 'text-red-500' 
               }
               
-              // const isCursor = index === currentSentence.length
+              // const isCursor = index === inputSentence.length
 
               return (
                 // <span key={index}>
