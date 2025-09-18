@@ -21,7 +21,7 @@ const Practice : React.FC = () => {
         <PracticeWords key={componentKey} />
       </div>
       <div className='py-10'>
-        <RefreshWords onReloadClick={handleReload} />
+        <RefreshWords onReloadClick={handleReload}/>
       </div>
     </div>
   )
