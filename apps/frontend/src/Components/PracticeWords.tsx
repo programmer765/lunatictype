@@ -24,25 +24,27 @@ const PracticeWords = () => {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
-  const characterRef = useRef<(HTMLSpanElement | null)[]>([])
+  const characterRef = useRef<(HTMLSpanElement | null)[]>(Array(chars.length).fill(null))
 
   const updateCursorPosition = useCallback((index : number) => {
     if(characterRef.current[index] === null || textRef.current === null) return
     const char = characterRef.current[index]
     const textContainer = textRef.current
-    
+    console.log(char)
     if(char) {
       const charRect = char.getBoundingClientRect()
       const containerRect = textContainer.getBoundingClientRect()
 
-      setCursorPosition({
-        x: charRect.left - containerRect.left,
-        y: charRect.top - containerRect.top + charRect.height / 8,
-      })
+      const left = charRect.left - containerRect.left
+      const top = charRect.top - containerRect.top + charRect.height / 6
+
+      setCursorPosition({ x: left, y: top })
+
+      console.log(left, top)
     } else if(index === 0) {
       setCursorPosition({x: 0, y: 0})
     }
-  }, [])
+  }, [characterRef])
   
   useEffect(() => {
     if(data.isLoading === true) {
@@ -65,13 +67,9 @@ const PracticeWords = () => {
       typed: ''
     })))
     
-    updateCursorPosition(0)
+    setIndex(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.isLoading])
-
-  useEffect(() => {
-    updateCursorPosition(chars.length)
-  }, [updateCursorPosition, chars])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -86,11 +84,19 @@ const PracticeWords = () => {
         if(chars[index].char === e.key) {
           chars[index].isCorrect = true
         }
+        else if (chars[index].char === ' ') {
+          const char : CharState = {
+            char: e.key,
+            isAdded: true,
+            isTyped: true,
+            isCorrect: false,
+            typed: e.key
+          }
+          chars.splice(index, 0, char)
+        }
         setIndex(index + 1)
       }
       else if(e.key === 'Backspace') {
-        console.log(e.key)
-        console.log(chars[index])
         if(index === 0) return
         if(chars[index - 1].isAdded) {
           chars.splice(index - 1, 1)
@@ -109,7 +115,25 @@ const PracticeWords = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [chars, index])
+  }, [chars, index, updateCursorPosition])
+
+  useEffect(() => {
+    requestAnimationFrame(() => updateCursorPosition(index))
+  }, [index, updateCursorPosition])
+
+  useEffect(() => {
+    // updateCursorPosition(index)
+
+    const handleResize = () => {
+      requestAnimationFrame(() => updateCursorPosition(index))
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [index, updateCursorPosition])
+
 
   const getCharColor = (char: CharState) => {
     if(char.isTyped) {
@@ -130,12 +154,12 @@ const PracticeWords = () => {
       <div ref={containerRef} className='relative flex flex-wrap text-justify overflow-hidden h-[26vh]'>
         <div ref={textRef} className='mx-2 text-4xl tracking-wider'>
         <div 
-          className='absolute w-[1px] h-10 bg-white transition-transform duration-300 ease-in-out'
+          className='absolute w-[2px] h-10 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink'
           style={{ transform: `translate(${cursorPosition.x}px, ${cursorPosition.y}px)`}}
         />
         {
           chars.map((char, index) => (
-            <span key={index} className={`${getCharColor(char)}`}>{char.char}</span>
+            <span ref={(el) => characterRef.current[index] = el} key={index} className={`${getCharColor(char)} transition-all duration-290 ease-in-out`}>{char.char}</span>
           ))
         }
         </div>

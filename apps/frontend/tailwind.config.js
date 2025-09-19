@@ -5,7 +5,17 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        blink: {
+          '0%, 50%, 100%': { opacity: 1 },
+          '25%, 75%': { opacity: 0.25 }
+        }
+      },
+      animation: {
+        blink: 'blink 3s infinite'
+      }
+    },
   },
   plugins: [],
 }
