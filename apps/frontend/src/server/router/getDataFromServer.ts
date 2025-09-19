@@ -3,8 +3,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 
 const useGetRandomWordFromServer = () => {
     return useQuery(trpc.randomWord.generate.queryOptions(undefined, {
-        staleTime: Infinity,
-        gcTime: Infinity,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false
     }))
