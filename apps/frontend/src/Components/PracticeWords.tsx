@@ -22,6 +22,7 @@ const PracticeWords = () => {
   const [index, setIndex] = useState<number>(0)
   const [currentLine, setCurrentLine] = useState<number>(0)
   const [lineHeight, setLineHeight] = useState<number>(0)
+  const [skipFirstLine, setSkipFirstLine] = useState<boolean>(true)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
@@ -36,7 +37,7 @@ const PracticeWords = () => {
       const containerRect = textContainer.getBoundingClientRect()
 
       const left = charRect.left - containerRect.left
-      const top = charRect.top - containerRect.top
+      const top = charRect.top - containerRect.top + charRect.height / 6
 
       setCursorPosition({ x: left, y: top })
 
@@ -110,6 +111,10 @@ const PracticeWords = () => {
           const prevTop = prevChar.getBoundingClientRect().top
           const currentTop = char.getBoundingClientRect().top
           if(currentTop > prevTop) {
+            if(skipFirstLine) {
+              setSkipFirstLine(false)
+              return
+            }
             setCurrentLine(currentLine + 1)
           }
         }
@@ -134,6 +139,9 @@ const PracticeWords = () => {
           const nextTop = nextChar.getBoundingClientRect().top
           const currentTop = char.getBoundingClientRect().top
           if(currentTop < nextTop) {
+            if(currentLine === 0) {
+              setSkipFirstLine(true)
+            }
             setCurrentLine(Math.max(currentLine - 1, 0))
           }
         }
@@ -190,7 +198,7 @@ const PracticeWords = () => {
       <div 
         ref={containerRef} 
         className='relative flex flex-wrap text-justify overflow-hidden h-[26vh]'
-        style={{ height: lineHeight * 3 + 20 || '26vh' }}
+        style={{ height: lineHeight * 2.6 || '26vh' }}
       >
         <div 
           ref={textRef} 
@@ -206,7 +214,7 @@ const PracticeWords = () => {
             <span 
               ref={(el) => characterRef.current[index] = el} 
               key={index} 
-              className={`${getCharColor(char)} transition-all duration-290 ease-in-out`}
+              className={`${getCharColor(char)} transition-all duration-500 ease-in-out`}
             >
               {char.char}
             </span>
