@@ -4,7 +4,7 @@ import { publicProcedure, protectedProcedure , router, t } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
-const wordCount = 50;
+const wordCount = process.env.WORD_COUNT ? parseInt(process.env.WORD_COUNT) : 1000;
 
 // const router : Router = Router();
 
