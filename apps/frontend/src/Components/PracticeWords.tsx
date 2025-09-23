@@ -23,10 +23,32 @@ const PracticeWords = () => {
   const [currentLine, setCurrentLine] = useState<number>(0)
   const [lineHeight, setLineHeight] = useState<number>(0)
   const [skipFirstLine, setSkipFirstLine] = useState<boolean>(true)
+  const [lineStarts, setLineStarts] = useState<{index: number, top: number}[]>([])
 
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const characterRef = useRef<(HTMLSpanElement | null)[]>(Array(chars.length).fill(null))
+
+  const updateLineStarts = useCallback(() => {
+    requestAnimationFrame(() => {
+      const textEl = textRef.current
+      if(!textEl) return
+      const rect = textEl.getBoundingClientRect()
+      const newLineStarts: {index: number, top: number}[] = []
+      let lastTop : number | null = null
+
+      for(let i = 0; i < characterRef.current.length; i++) {
+        const char = characterRef.current[i]
+        if(!char) continue
+        const top = Math.round(char.getBoundingClientRect().top - rect.top)
+        if(lastTop === null || Math.abs(top - lastTop) > 5) {
+          newLineStarts.push({index: i, top: top})
+          lastTop = top
+        }
+      }
+      setLineStarts(newLineStarts)
+    })
+  }, [])
 
   const updateCursorPosition = useCallback((index : number) => {
     if(characterRef.current[index] === null || textRef.current === null) return
@@ -73,11 +95,15 @@ const PracticeWords = () => {
   }, [data.isLoading])
 
   useEffect(() => {
-    if(characterRef.current[0]) {
-      const rect = characterRef.current[0].getBoundingClientRect()
-      setLineHeight(rect.height)
-    }
-  }, [chars])
+    requestAnimationFrame(() => {
+      const first = characterRef.current[0]
+      if(first) {
+        const rect = first.getBoundingClientRect()
+        setLineHeight(rect.height)
+      }
+      updateLineStarts()
+    })
+  }, [chars, updateLineStarts])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,14 +134,16 @@ const PracticeWords = () => {
         const char = characterRef.current[index + 1]
         const prevChar = characterRef.current[index]
         if(char && prevChar) {
-          const prevTop = prevChar.getBoundingClientRect().top
-          const currentTop = char.getBoundingClientRect().top
+          const prevTop = Math.round(prevChar.getBoundingClientRect().top)
+          const currentTop = Math.round(char.getBoundingClientRect().top)
           if(currentTop > prevTop) {
+            console.log(currentLine)
             if(skipFirstLine) {
               setSkipFirstLine(false)
               return
             }
-            setCurrentLine(currentLine + 1)
+            setCurrentLine((currentLine) => Math.min(currentLine + 1, Math.max(0, lineStarts.length - 1)))
+            updateLineStarts()
           }
         }
 
@@ -139,10 +167,11 @@ const PracticeWords = () => {
           const nextTop = nextChar.getBoundingClientRect().top
           const currentTop = char.getBoundingClientRect().top
           if(currentTop < nextTop) {
+            console.log(currentLine)
             if(currentLine === 0) {
               setSkipFirstLine(true)
             }
-            setCurrentLine(Math.max(currentLine - 1, 0))
+            setCurrentLine((currentLine) => Math.max(currentLine - 1, 0))
           }
         }
       }
@@ -158,7 +187,8 @@ const PracticeWords = () => {
 
   useEffect(() => {
     requestAnimationFrame(() => updateCursorPosition(index))
-  }, [index, updateCursorPosition])
+    updateLineStarts()
+  }, [index, updateCursorPosition, updateLineStarts])
 
   useEffect(() => {
     // updateCursorPosition(index)
@@ -168,7 +198,7 @@ const PracticeWords = () => {
         const rect = characterRef.current[0].getBoundingClientRect()
         setLineHeight(rect.height)
       }
-
+      updateLineStarts()
       requestAnimationFrame(() => updateCursorPosition(index))
     }
 
@@ -176,7 +206,7 @@ const PracticeWords = () => {
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [index, updateCursorPosition])
+  }, [index, updateCursorPosition, updateLineStarts])
 
 
   const getCharColor = (char: CharState) => {
@@ -191,6 +221,15 @@ const PracticeWords = () => {
     return 'text-gray-500'
   }
 
+  const computeTranslateY = () => {
+    if(!lineStarts || lineStarts.length === 0) return 0
+    const top = lineStarts[0].top
+    const target = lineStarts[Math.min(currentLine, lineStarts.length - 1)]?.top || top
+    return target - top
+  }
+
+  const translateY = computeTranslateY()
+
 
   return (
     <div>
@@ -198,12 +237,12 @@ const PracticeWords = () => {
       <div 
         ref={containerRef} 
         className='relative flex flex-wrap text-justify overflow-hidden h-[26vh]'
-        style={{ height: lineHeight * 2.6 || '26vh' }}
+        style={{ height: lineHeight * 3 || '26vh' }}
       >
         <div 
           ref={textRef} 
           className='mx-2 text-4xl tracking-wider transition-transform duration-300 ease-in-out'
-          style={{ transform: `translateY(-${currentLine * lineHeight}px)`}}
+          style={{ transform: `translateY(-${translateY}px)`}}
         >
         <div 
           className='absolute w-[2px] h-10 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink'
