@@ -4,7 +4,7 @@ import { publicProcedure, protectedProcedure , router, t } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
-const wordCount = process.env.WORD_COUNT ? parseInt(process.env.WORD_COUNT) : 1000;
+const wordCount = process.env.WORD_COUNT ? parseInt(process.env.WORD_COUNT) : 500;
 
 // const router : Router = Router();
 
@@ -39,7 +39,7 @@ const randomWordRouter = router({
     generate: publicProcedure.query(() => {
         try {
             console.log('api/randomWordRouter.generate')
-            const randomWord = generate(wordCount);
+            const randomWord = generate({ exactly: wordCount, maxLength: 6});
             if(Array.isArray(randomWord) === false || randomWord === undefined || randomWord === null) {
                 throw Error("randomWords did not generate propery. It is either not an array or undefined")
             }
