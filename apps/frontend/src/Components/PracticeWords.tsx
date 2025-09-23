@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useGetRandomWordFromServer } from '../server/router/getDataFromServer'
 import Loading from './Loading'
+import { motion } from 'framer-motion'
 
 
 interface CharState {
@@ -118,7 +119,7 @@ const PracticeWords = () => {
       return
     }
     const words: string[] = data.data ? data.data : [""]
-    setLoading(false)
+    
     const sentence : string = words.join(' ')
 
     setChars(sentence.split('').map((char) => ({
@@ -130,17 +131,24 @@ const PracticeWords = () => {
     })))
     
     setIndex(0)
+    
+    // Don't set loading to false here - let useLayoutEffect handle it after layout is ready
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.isLoading])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (chars.length === 0) return
+    
+    const first = characterRef.current[0]
+    if(first) {
+      const rect = first.getBoundingClientRect()
+      setLineHeight(rect.height)
+    }
+    updateLineStarts()
+    
+    // Only remove loading after layout is calculated
     requestAnimationFrame(() => {
-      const first = characterRef.current[0]
-      if(first) {
-        const rect = first.getBoundingClientRect()
-        setLineHeight(rect.height)
-      }
-      updateLineStarts()
+      setLoading(false)
     })
   }, [chars, updateLineStarts])
 
@@ -245,36 +253,47 @@ const PracticeWords = () => {
 
 
   return (
-    <div>
+    <motion.div
+      initial='hidden'
+      animate='visible'
+      variants={{
+        hidden: { opacity: 0 },
+        visible: { opacity: 1 }
+      }}
+      transition={{ duration: 1 }}
+      className='relative'
+    >
       { loading && <Loading />}
-      <div 
-        ref={containerRef} 
-        className='relative flex flex-wrap text-justify overflow-hidden'
-        style={{ height: lineHeight * 3.5 || '32vh' }}
-      >
+      <div className='h-[30vh] flex items-center'>
         <div 
-          ref={textRef} 
-          className='mx-2 text-[2.75rem] tracking-widest transition-transform duration-300 ease-in-out'
-          style={{ transform: `translateY(-${translateY}px)`}}
+          ref={containerRef} 
+          className={`relative flex flex-wrap text-justify overflow-hidden transition-opacity duration-200 ${loading ? 'opacity-0' : 'opacity-100'}`}
+          style={{ height: lineHeight * 3.5 || '32vh' }}
         >
-        <div 
-          className='absolute w-[2px] h-12 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink'
-          style={{ transform: `translate(${cursorPosition.x}px, ${cursorPosition.y}px)`}}
-        />
-        {
-          chars.map((char, index) => (
-            <span 
-              ref={(el) => characterRef.current[index] = el} 
-              key={index} 
-              className={`${getCharColor(char)} transition-all duration-500 ease-in-out`}
-            >
-              {char.char}
-            </span>
-          ))
-        }
+          <div 
+            ref={textRef} 
+            className='mx-2 text-[2.75rem] tracking-widest transition-transform duration-300 ease-in-out'
+            style={{ transform: `translateY(-${translateY}px)`}}
+          >
+          <div 
+            className='absolute w-[2px] h-12 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink'
+            style={{ transform: `translate(${cursorPosition.x}px, ${cursorPosition.y}px)`}}
+          />
+          {
+            chars.map((char, index) => (
+              <span 
+                ref={(el) => characterRef.current[index] = el} 
+                key={index} 
+                className={`${getCharColor(char)} transition-all duration-500 ease-in-out`}
+              >
+                {char.char}
+              </span>
+            ))
+          }
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
