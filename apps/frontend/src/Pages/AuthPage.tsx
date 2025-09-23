@@ -18,12 +18,14 @@ const AuthPage : React.FC = () => {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const state = searchParams.get('state');
-  let from = location.state?.from === undefined ? 'login' : location.state.from as string;
-  sessionStorage.getItem('from') !== null ? from = sessionStorage.getItem('from') as string : null
+  const fromLocation = location.state?.from === undefined ? null : location.state.from as string;
+  const fromSession = sessionStorage.getItem('from') !== null ? sessionStorage.getItem('from') as string : null
+  let fromState = null;
   if(state) {
     const decodedState : decodedState = JSON.parse(decodeURIComponent(state));
-    from = decodedState.from;
+    fromState = decodedState.from;
   }
+  const from = fromLocation !== null ? fromLocation : fromSession !== null ? fromSession : fromState !== null ? fromState : 'login';
   sessionStorage.setItem('from', from)
   const [authFrom, setAuthFrom] = useState(from)
 

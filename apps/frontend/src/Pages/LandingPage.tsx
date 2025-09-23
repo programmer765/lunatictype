@@ -67,8 +67,8 @@ const LandingPage : React.FC = () => {
   return (
     <motion.div>
       { isLoading && <Loading />}
-      <motion.div className='h-screen bg-[#202020]'>
-        <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }}>
+      <motion.div className='h-screen bg-[#202020] flex flex-col'>
+        <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }} className="flex flex-col h-full">
           <motion.div className='' variants={item}>
               <Navbar 
                 isPractice={isPractice} 
@@ -80,14 +80,14 @@ const LandingPage : React.FC = () => {
           {
             isPractice ? 
             ( 
-              <div>
+              <div className="flex-1">
                 <Practice />
               </div>
             )
             :
             isOnline ? 
             (
-              <div>
+              <div className="flex-1">
                 <PlayOnline />
               </div>
             )
