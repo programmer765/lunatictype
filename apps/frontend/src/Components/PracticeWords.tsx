@@ -68,7 +68,46 @@ const PracticeWords = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [characterRef])
+
+  const increaseCurrentLine = useCallback((index: number) => {
+    requestAnimationFrame(() => {
+      const char = characterRef.current[index + 1]
+      const prevChar = characterRef.current[index]
+      if(char && prevChar) {
+        const prevTop = Math.round(prevChar.getBoundingClientRect().top)
+        const currentTop = Math.round(char.getBoundingClientRect().top)
+        if(currentTop > prevTop) {
+          console.log(currentLine)
+          if(skipFirstLine) {
+            setSkipFirstLine(false)
+            return
+          }
+          setCurrentLine((currentLine) => Math.min(currentLine + 1, Math.max(0, lineStarts.length - 1)))
+          updateLineStarts()
+        }
+      }
+    })
+  }, [characterRef, currentLine, lineStarts, skipFirstLine, updateLineStarts])
   
+  const decreaseCurrentLine = useCallback((index: number) => {
+    requestAnimationFrame(() => {
+        const char = characterRef.current[index - 1]
+        const nextChar = characterRef.current[index]
+        if(char && nextChar) {
+          const nextTop = nextChar.getBoundingClientRect().top
+          const currentTop = char.getBoundingClientRect().top
+          if(currentTop < nextTop) {
+            console.log(currentLine)
+            if(currentLine === 0) {
+              setSkipFirstLine(true)
+            }
+            setCurrentLine((currentLine) => Math.max(currentLine - 1, 0))
+            updateLineStarts()
+          }
+        }
+    })
+  }, [characterRef, currentLine, updateLineStarts])
+
   useEffect(() => {
     if(data.isLoading === true) {
       setLoading(true)
@@ -131,21 +170,7 @@ const PracticeWords = () => {
         setIndex(index + 1)
 
         // Check if we need to scroll to the next line
-        const char = characterRef.current[index + 1]
-        const prevChar = characterRef.current[index]
-        if(char && prevChar) {
-          const prevTop = Math.round(prevChar.getBoundingClientRect().top)
-          const currentTop = Math.round(char.getBoundingClientRect().top)
-          if(currentTop > prevTop) {
-            console.log(currentLine)
-            if(skipFirstLine) {
-              setSkipFirstLine(false)
-              return
-            }
-            setCurrentLine((currentLine) => Math.min(currentLine + 1, Math.max(0, lineStarts.length - 1)))
-            updateLineStarts()
-          }
-        }
+        increaseCurrentLine(index)
 
       }
       else if(e.key === 'Backspace') {
@@ -161,19 +186,7 @@ const PracticeWords = () => {
         setIndex(index - 1)
 
         // Check if we need to scroll to the previous line
-        const char = characterRef.current[index - 1]
-        const nextChar = characterRef.current[index]
-        if(char && nextChar) {
-          const nextTop = nextChar.getBoundingClientRect().top
-          const currentTop = char.getBoundingClientRect().top
-          if(currentTop < nextTop) {
-            console.log(currentLine)
-            if(currentLine === 0) {
-              setSkipFirstLine(true)
-            }
-            setCurrentLine((currentLine) => Math.max(currentLine - 1, 0))
-          }
-        }
+        decreaseCurrentLine(index)
       }
     }
 
@@ -236,16 +249,16 @@ const PracticeWords = () => {
       { loading && <Loading />}
       <div 
         ref={containerRef} 
-        className='relative flex flex-wrap text-justify overflow-hidden h-[26vh]'
-        style={{ height: lineHeight * 3 || '26vh' }}
+        className='relative flex flex-wrap text-justify overflow-hidden'
+        style={{ height: lineHeight * 3.5 || '32vh' }}
       >
         <div 
           ref={textRef} 
-          className='mx-2 text-4xl tracking-wider transition-transform duration-300 ease-in-out'
+          className='mx-2 text-[2.75rem] tracking-widest transition-transform duration-300 ease-in-out'
           style={{ transform: `translateY(-${translateY}px)`}}
         >
         <div 
-          className='absolute w-[2px] h-10 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink'
+          className='absolute w-[2px] h-12 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink'
           style={{ transform: `translate(${cursorPosition.x}px, ${cursorPosition.y}px)`}}
         />
         {
