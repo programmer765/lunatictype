@@ -2,7 +2,13 @@ import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 
 
-const PracticeType = () => {
+interface PracticeTypeProps {
+  setIsCompleted: (completed: boolean) => void
+}
+
+
+
+const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted }) => {
 
   const time : number[] = [30, 60, 90]
   const words : number[] = [50, 75, 100, 125, 150]
@@ -40,13 +46,19 @@ const PracticeType = () => {
   }
   
   useEffect(() => {
-    if (timeLeft <= 0 || !isStarted) return 
+    if(!isStarted) return
+
+    if (timeLeft <= 0) {
+      setIsStarted(false)
+      setIsCompleted(true)
+      return
+    }
 
     setTimeout(() => {
       setTimeLeft((prev) => prev - 1)
     }, 1000)
 
-  }, [timeLeft, isStarted])
+  }, [timeLeft, isStarted, setIsCompleted])
 
   return (
     <div>

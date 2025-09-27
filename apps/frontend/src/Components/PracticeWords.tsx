@@ -13,7 +13,7 @@ interface CharState {
 }
 
 
-const PracticeWords = () => {
+const PracticeWords : React.FC = () => {
 
   const data = useGetRandomWordFromServer()
 
