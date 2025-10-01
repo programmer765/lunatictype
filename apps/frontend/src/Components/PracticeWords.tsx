@@ -12,8 +12,12 @@ interface CharState {
   typed: string
 }
 
+interface PracticeWordsProps {
+  onComplete: (charactersTyped: number, timeTaken: number, errorsMade: number) => void
+}
 
-const PracticeWords : React.FC = () => {
+
+const PracticeWords : React.FC<PracticeWordsProps> = ({ onComplete }) => {
 
   const data = useGetRandomWordFromServer()
 

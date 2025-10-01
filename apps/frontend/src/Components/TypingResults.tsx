@@ -2,7 +2,14 @@ import React from 'react'
 import { motion } from 'framer-motion'
 
 
-const TypingResults : React.FC = () => {
+interface TypingResultsProps {
+  charactersTyped: number
+  timeTaken: number
+  errorsMade: number
+}
+
+
+const TypingResults : React.FC<TypingResultsProps> = ({ charactersTyped, timeTaken, errorsMade }) => {
   return (
     <motion.div
       initial='hidden'
