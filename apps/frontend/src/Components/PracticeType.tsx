@@ -4,11 +4,14 @@ import { useEffect, useState } from "react"
 
 interface PracticeTypeProps {
   setIsCompleted: (completed: boolean) => void
+  timeTaken: React.MutableRefObject<number>
+  isStarted: boolean
+  setIsStarted: (started: boolean) => void
 }
 
 
 
-const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted }) => {
+const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted, timeTaken, isStarted, setIsStarted }) => {
 
   const time : number[] = [30, 60, 90]
   const words : number[] = [50, 75, 100, 125, 150]
@@ -17,7 +20,7 @@ const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted }) => {
   const [activeIndex, setActiveIndex] = useState<number>(0)
   const [timeLeft, setTimeLeft] = useState<number>(time[activeIndex])
   const [wordsLeft, setWordsLeft] = useState<number>(words[activeIndex])
-  const [isStarted, setIsStarted] = useState<boolean>(false)
+  // const [isStarted, setIsStarted] = useState<boolean>(false)
 
   const updateLeft = (index : number) => {
     console.log(activeCondition)
@@ -30,14 +33,10 @@ const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted }) => {
 
   const handleCondition = (condn : string) => {
     setActiveIndex(0)
+    timeTaken.current = condn === 'time' ? time[0] : 0
     setActiveConditionSubList(condn === 'time' ? time : words)
     setActiveCondition(condn)
     updateLeft(0)
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStart = () => {
-    setIsStarted(true)
   }
 
   const updateActiveIndex = (index : number) => {
@@ -48,16 +47,32 @@ const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted }) => {
   useEffect(() => {
     if(!isStarted) return
 
-    if (timeLeft <= 0) {
+    if (timeLeft <= 0 || wordsLeft <= 0) {
       setIsStarted(false)
       setIsCompleted(true)
+
+      if(activeCondition === 'time') {
+        timeTaken.current = time[activeIndex]
+      } else {
+        timeTaken.current = timeLeft // in seconds
+      }
+
       return
     }
 
-    setTimeout(() => {
-      setTimeLeft((prev) => prev - 1)
-    }, 1000)
+    if (activeCondition === 'time') {
+      setTimeout(() => {
+        setTimeLeft((prev) => prev - 1)
+      }, 1000)
+    }
+    else {
+      setTimeout(() => {
+        setTimeLeft((prev) => prev + 1)
+      }, 1000)
+      setWordsLeft((prev) => prev - 1)
+    }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, isStarted, setIsCompleted])
 
   return (

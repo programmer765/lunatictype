@@ -3,13 +3,20 @@ import { motion } from 'framer-motion'
 
 
 interface TypingResultsProps {
-  charactersTyped: number
-  timeTaken: number
-  errorsMade: number
+  charactersTyped: React.MutableRefObject<number>
+  timeTaken: React.MutableRefObject<number>
+  errorsMade: React.MutableRefObject<number>
 }
 
 
 const TypingResults : React.FC<TypingResultsProps> = ({ charactersTyped, timeTaken, errorsMade }) => {
+
+  const timetakenInMinutes = timeTaken.current / 60
+  const rawwpm = Math.round((charactersTyped.current / 5) / timetakenInMinutes) || 0
+  const wpm = Math.round(rawwpm - (errorsMade.current / timetakenInMinutes)) || 0
+  const accuracy = Math.round(((charactersTyped.current - errorsMade.current) / charactersTyped.current) * 100) || 0
+
+
   return (
     <motion.div
       initial='hidden'
@@ -25,19 +32,19 @@ const TypingResults : React.FC<TypingResultsProps> = ({ charactersTyped, timeTak
         <div className='flex flex-col items-center mx-5'>
           WPM
           <div className='text-3xl'>
-            75
+            { wpm }
           </div>
         </div>
         <div className='flex flex-col items-center mx-5'>
           Raw WPM
           <div className='text-3xl'>
-            80
+            { rawwpm }
           </div>
         </div>
         <div className='flex flex-col items-center mx-5'>
           Accuracy
           <div className='text-3xl'>
-            95%
+            { accuracy }%
           </div>
         </div>
       </div>

@@ -13,11 +13,14 @@ interface CharState {
 }
 
 interface PracticeWordsProps {
-  onComplete: (charactersTyped: number, timeTaken: number, errorsMade: number) => void
+  charactersTyped: React.MutableRefObject<number>
+  errorsMade: React.MutableRefObject<number>
+  setIsStarted: (started: boolean) => void
+  isStarted: boolean
 }
 
 
-const PracticeWords : React.FC<PracticeWordsProps> = ({ onComplete }) => {
+const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsMade, setIsStarted, isStarted }) => {
 
   const data = useGetRandomWordFromServer()
 
@@ -162,9 +165,16 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ onComplete }) => {
       const { ctrlKey, metaKey, shiftKey } = e
       if(ctrlKey || metaKey || shiftKey) return
       if(e.key.length === 1) {
+
+        if(isStarted === false) {
+          setIsStarted(true)
+        }
         
         chars[index].isTyped = true
         chars[index].typed = e.key
+
+        // Update characters typed count
+        charactersTyped.current += 1
         
         if(chars[index].char === e.key) {
           chars[index].isCorrect = true
@@ -184,9 +194,18 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ onComplete }) => {
         // Check if we need to scroll to the next line
         increaseCurrentLine(index)
 
+        // if error made increment error count
+        if(chars[index].isCorrect === false) {
+          errorsMade.current += 1
+        }
       }
       else if(e.key === 'Backspace') {
         if(index === 0) return
+
+        if(chars[index - 1].isCorrect === false) {
+          errorsMade.current = Math.max(0, errorsMade.current - 1)
+        }
+
         if(chars[index - 1].isAdded) {
           chars.splice(index - 1, 1)
         }
