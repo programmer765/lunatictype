@@ -4,6 +4,7 @@ import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import LandingPage from './Pages/LandingPage'
 import AuthPage from './Pages/AuthPage'
+import ErrorPage from './Pages/ErrorPage'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './utils/trpc'
 
@@ -11,6 +12,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <LandingPage />,
+    errorElement: <ErrorPage />
   },
   {
     path: '/v1/auth',
