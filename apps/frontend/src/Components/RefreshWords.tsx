@@ -3,11 +3,12 @@ import { MdOutlineRefresh } from "react-icons/md";
 
 interface RefreshWordsProps {
   onReloadClick: () => void
+  isStarted: boolean
 }
 
-const RefreshWords : React.FC<RefreshWordsProps> = ({ onReloadClick }) => {
+const RefreshWords : React.FC<RefreshWordsProps> = ({ onReloadClick, isStarted }) => {
   return (
-    <div className="w-fit mx-auto">
+    <div className={`w-fit mx-auto ${isStarted ? 'opacity-0 invisible' : 'opacity-100 visible'} transition-all duration-500`}>
       <div 
         onClick={onReloadClick}
         className="px-7 py-5 border border-solid border-gray-900 rounded-md cursor-pointer bg-black shadow-xl hover:scale-110 hover:shadow-2xl transition-all duration-300 select-none">

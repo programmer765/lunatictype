@@ -21,12 +21,13 @@ const Practice : React.FC = () => {
     errorsMade.current = 0
     setComponentKey(prevKey => 1 - prevKey)
     setIsCompleted(false)
+    setIsStarted(false)
   }
 
   return (
     <div className='px-10'>
       <div className='my-10'>
-        <PracticeType setIsCompleted={setIsCompleted} timeTaken={timeTaken} isStarted={isStarted} setIsStarted={setIsStarted} />
+        <PracticeType key={componentKey} setIsCompleted={setIsCompleted} timeTaken={timeTaken} isStarted={isStarted} setIsStarted={setIsStarted} />
       </div>
       <div className='py-10'>
         { 
@@ -37,7 +38,7 @@ const Practice : React.FC = () => {
         }
       </div>
       <div className='py-10'>
-        <RefreshWords onReloadClick={handleReload}/>
+        <RefreshWords onReloadClick={handleReload} isStarted={isStarted} />
       </div>
     </div>
   )

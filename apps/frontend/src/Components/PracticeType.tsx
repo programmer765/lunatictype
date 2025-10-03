@@ -18,8 +18,8 @@ const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted, timeTaken, 
   const [activeConditionSubList, setActiveConditionSubList] = useState<number[]>(time)
   const [activeCondition, setActiveCondition] = useState<string>('time')
   const [activeIndex, setActiveIndex] = useState<number>(0)
-  const [timeLeft, setTimeLeft] = useState<number>(time[activeIndex])
-  const [wordsLeft, setWordsLeft] = useState<number>(words[activeIndex])
+  const [timeLeft, setTimeLeft] = useState<number>(time[0])
+  const [wordsLeft, setWordsLeft] = useState<number>(words[0])
   // const [isStarted, setIsStarted] = useState<boolean>(false)
 
   const updateLeft = (index : number) => {
@@ -78,7 +78,7 @@ const PracticeType: React.FC<PracticeTypeProps> = ({ setIsCompleted, timeTaken, 
   return (
     <div>
       <div className="relative flex justify-between items-center">
-        <div className="flex flex-1 items-center">
+        <div className={`flex flex-1 items-center ${isStarted ? 'opacity-0 invisible' : 'opacity-100 visible'} transition-all duration-500`}>
           <div className="flex flex-1 justify-end border-r-2 border-gray-600">
             <div className="relative flex py-2 border-2 bg-[#161616] border-[#161616] rounded-l-md">
               <motion.div
