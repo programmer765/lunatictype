@@ -7,7 +7,8 @@
     "clean": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b",
-    "dev": "pnpm run clean && tsc -b && nodemon"
+    "dev": "pnpm run clean && tsc -b && nodemon",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
