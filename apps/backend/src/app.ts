@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req: Request, res: Response) => {
     try {
-        return res.json({ message: "Hello World" });
+        return res.json({ message: "Hello from lunatictype server" });
     }
     catch (error) {
         console.error(error);

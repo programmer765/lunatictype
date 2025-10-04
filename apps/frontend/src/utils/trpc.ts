@@ -3,6 +3,10 @@ import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import { AppRouter } from 'backend';
 
+const apiUrl = import.meta.env.VITE_API_URL as string || 'http://localhost:3000';
+// console.log(apiUrl)
+console.log(import.meta.env)
+
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,7 +20,7 @@ export const queryClient = new QueryClient({
 const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({ 
-      url: 'http://localhost:3000/api',
+      url: `${apiUrl}/api`,
       fetch(url, options) {
         return fetch(url, {
           ...(options as RequestInit),
