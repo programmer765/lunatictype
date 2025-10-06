@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      backend:
+        specifier: workspace:*
+        version: link:apps/backend
+      frontend:
+        specifier: workspace:*
+        version: link:apps/frontend
       prettier:
         specifier: ^3.2.5
         version: 3.6.2
