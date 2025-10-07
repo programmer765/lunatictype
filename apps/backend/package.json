@@ -9,7 +9,7 @@
     "build": "tsc -b",
     "dev": "set NODE_ENV=development&& pnpm run clean && tsc -b && nodemon",
     "start": "set NODE_ENV=production&& pnpm run clean && tsc -b && nodemon",
-    "render": "pnpm run clean && tsc -b && nodemon",
+    "render": "set NODE_ENV=render&& pnpm run clean && tsc -b && nodemon",
     "postinstall": "prisma generate"
   },
   "keywords": [],
