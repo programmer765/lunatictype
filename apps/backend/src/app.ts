@@ -9,8 +9,7 @@ import appRouter from './routes';
 import createContext from './context';
 // import { supabase_anon_key, supabase_url } from './env';
 
-const envFile = process.env.NODE_ENV === 'development' ? '.env.local' : process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
-// console.log(process.env.NODE_ENV, envFile);
+const envFile = process.env.NODE_ENV === 'development' ? '.env.local' : '.env.production';
 dotenv.config({ path: envFile });
 
 const client_url = process.env.CLIENT_URL ?? "*";
