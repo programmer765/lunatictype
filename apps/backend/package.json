@@ -6,8 +6,9 @@
   "scripts": {
     "clean": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "set NODE_ENV=production&& tsc -b",
+    "build": "set NODE_ENV=production&& tsc -b && nodemon",
     "dev": "set NODE_ENV=development&& pnpm run clean && tsc -b && nodemon",
+    "render": "pnpm run clean && tsc -b && nodemon",
     "postinstall": "prisma generate"
   },
   "keywords": [],
