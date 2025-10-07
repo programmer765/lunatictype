@@ -2,15 +2,19 @@ import express, { Request, Response} from 'express';
 import cors from 'cors';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import cookieParser from 'cookie-parser';
-import { createClient } from '@supabase/supabase-js';
+// import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-dotenv.config();
+// dotenv.config();
 import appRouter from './routes';
 import createContext from './context';
-import { supabase_anon_key, supabase_url } from './env';
+// import { supabase_anon_key, supabase_url } from './env';
+
+const envFile = process.env.NODE_ENV === 'development' ? '.env.local' : process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+// console.log(process.env.NODE_ENV, envFile);
+dotenv.config({ path: envFile });
 
 const client_url = process.env.CLIENT_URL ?? "*";
-
+// console.log(client_url);
 const app = express();
 
 app.use(cors( { origin: client_url, credentials: true } ));
