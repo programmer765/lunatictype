@@ -115,6 +115,7 @@ const userDb = {
         }
         catch(err : any) {
             console.log(err.message)
+            throw new Error("Cannot delete cookie")
         }
     }
 }

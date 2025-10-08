@@ -41,6 +41,12 @@ const useIsLoggedIn = () => {
     }))
 }
 
+const useLogout = () => {
+    return useQuery(trpc.auth.logout.queryOptions(undefined, {
+        enabled: false,
+    }))
+}
+
 export {
     useGetRandomWordFromServer,
     useGetGoogleAuthLink,
@@ -49,5 +55,6 @@ export {
     useGetGithubTokenLink,
     useSignup,
     useLogin,
-    useIsLoggedIn
+    useIsLoggedIn,
+    useLogout
 }

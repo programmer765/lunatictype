@@ -4,14 +4,21 @@ import User from '../../types/User';
 import { IoMdClose } from "react-icons/io";
 import { LuLogOut, LuMail, LuUser } from "react-icons/lu";
 import { Avatar } from '@mui/material';
+import { useLogout } from '../../server/router/getDataFromServer';
+import Loading from '../Loading';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfileProps {
   user: User
 }
 
 const Profile : React.FC<ProfileProps> = ({ user }) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const logout = useLogout();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -30,9 +37,14 @@ const Profile : React.FC<ProfileProps> = ({ user }) => {
     };
   }, [isOpen]);
 
-  const handleSignOut = () => {
+  const useHandleSignOut = async () => {
     // Handle sign out logic here
     console.log('Signing out...');
+    setIsLoading(true);
+    const res = await logout.refetch();
+    setIsLoading(false);
+    if(!res.data || !res.data.success) alert('Error signing out, please try again later.');
+    navigate(0);
     setIsOpen(false);
   };
 
@@ -98,17 +110,20 @@ const Profile : React.FC<ProfileProps> = ({ user }) => {
               </div>
             </div>
 
-            {/* Sign Out Button */}
-            <div className="border-t text-red-600">
-              <motion.button
-                onClick={handleSignOut}
-                className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-profile-hover transition-colors duration-200"
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <LuLogOut className="w-4 h-4 " />
-                <span className="text-sm text-foreground">Sign out</span>
-              </motion.button>
+            <div>
+              { isLoading && <Loading /> }
+              {/* Sign Out Button */}
+              <div className="border-t text-red-600">
+                <motion.button
+                  onClick={useHandleSignOut}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-profile-hover transition-colors duration-200"
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <LuLogOut className="w-4 h-4 " />
+                  <span className="text-sm text-foreground">Sign out</span>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         )}
