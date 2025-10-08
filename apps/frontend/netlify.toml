@@ -1,5 +1,7 @@
 [build]
+	base = "apps/frontend"
   publish = "dist" 
+	command = "pnpm install --no-frozen-lockfile && turbo run build --filter frontend"
 
 [[redirects]]
   from = "/*"
