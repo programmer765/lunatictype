@@ -95,7 +95,7 @@ const userDb = {
             ctx.res.cookie(userInfoTokenName, userInfoToken, { 
                 httpOnly: true,
                 secure: node_env === "production",
-                sameSite: node_env === "production" ? "strict" : "lax",
+                sameSite: "none",
                 maxAge: jwt_expiry * 1000 // 1 day
             });
         }
