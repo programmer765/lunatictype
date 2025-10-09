@@ -110,7 +110,7 @@ const userDb = {
             ctx.res.clearCookie(cookieName, {
                 httpOnly: true,
                 secure: node_env === "production",
-                sameSite: node_env === "production" ? "strict" : "lax",
+                sameSite: "none",
             })
         }
         catch(err : any) {
