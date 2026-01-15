@@ -5,6 +5,7 @@ import { node_env, jwt_expiry, jwt_secret, userInfoTokenName } from "../env";
 import UserJWTPayload from "../routes/authRouters/userJWTPayload";
 import jwt from "jsonwebtoken"
 
+const user_not_found = "User not found";
 
 const userDb = {
     findByGoogleId: async (google_id: string) => {
@@ -14,7 +15,7 @@ const userDb = {
             });
         } catch (error: any) {
             console.error("Error finding user by Google ID:", error.message);
-            throw new Error("Failed to find user by Google ID");
+            throw new Error(user_not_found);
         }
     },
 
@@ -25,7 +26,7 @@ const userDb = {
             });
         } catch (error: any) {
             console.error("Error finding user by GitHub ID:", error.message);
-            throw new Error("Failed to find user by GitHub ID");
+            throw new Error(user_not_found);
         }
     },
 
@@ -36,7 +37,7 @@ const userDb = {
             });
         } catch (error: any) {
             console.error("Error finding user by email:", error.message);
-            throw new Error("Failed to find user by email");
+            throw new Error(user_not_found);
         }
     },
 
