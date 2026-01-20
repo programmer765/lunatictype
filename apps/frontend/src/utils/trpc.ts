@@ -22,10 +22,15 @@ const trpcClient = createTRPCClient<AppRouter>({
     httpBatchLink({ 
       url: `${apiUrl}/api`,
       fetch(url, options) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => {
+          controller.abort();
+        }, 5000);
         return fetch(url, {
           ...(options as RequestInit),
+          signal: controller.signal,
           credentials: "include"
-        })
+        }).finally(() => clearTimeout(timeout));
       }
     })
   ],

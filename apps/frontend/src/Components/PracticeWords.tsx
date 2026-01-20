@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { useGetRandomWordFromServer } from '../server/router/getDataFromServer'
 import Loading from './Loading'
 import { motion } from 'framer-motion'
+import { ErrorAlert } from '@repo/ui'
 
 
 interface CharState {
@@ -22,9 +23,10 @@ interface PracticeWordsProps {
 
 const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsMade, setIsStarted, isStarted }) => {
 
-  const data = useGetRandomWordFromServer()
+  const getRandomWordsFromServer = useGetRandomWordFromServer()
 
   const [loading, setLoading] = useState<boolean>(true)
+  const [isError, setIsError] = useState<boolean>(false)
   const [cursorPosition, setCursorPosition] = useState<{x: number, y: number}>({x: 0, y: 0})
   const [chars, setChars] = useState<CharState[]>([])
   const [index, setIndex] = useState<number>(0)
@@ -117,15 +119,19 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
   }, [characterRef, currentLine, updateLineStarts])
 
   useEffect(() => {
-    if(data.isLoading === true) {
+    console.log(getRandomWordsFromServer)
+    if(getRandomWordsFromServer.isLoading === true) {
       setLoading(true)
       return
     }
-    if(data.isError === true) {
+    if(getRandomWordsFromServer.isError === true) {
       setLoading(false)
+      // alert("Server Error: Unable to fetch words. Please try again later.")
+      // ErrorAlert({message: "Server Error: Unable to fetch words. Please try again later."})
+      setIsError(true)
       return
     }
-    const words: string[] = data.data ? data.data : [""]
+    const words: string[] = getRandomWordsFromServer.data ? getRandomWordsFromServer.data : [""]
     
     const sentence : string = words.join(' ')
 
@@ -141,7 +147,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
     
     // Don't set loading to false here - let useLayoutEffect handle it after layout is ready
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.isLoading])
+  }, [getRandomWordsFromServer.isLoading])
 
   useLayoutEffect(() => {
     if (chars.length === 0) return
@@ -287,6 +293,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
       className='relative'
     >
       { loading && <Loading />}
+      { isError && <ErrorAlert message="Error fetching words from server." /> }
       <div className='h-[30vh] flex items-center'>
         <div 
           ref={containerRef} 
