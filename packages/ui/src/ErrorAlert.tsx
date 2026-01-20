@@ -16,11 +16,12 @@ interface ErrorProps {
   message: string
 }
 
+
 export const ErrorAlert: React.FC<ErrorProps> = ({ message }) => {
   return (
     <>
       <AlertDialog open={true}>
-        <AlertDialogContent>
+        <AlertDialogContent className="text-white bg-[#111111] outline-none border border-[#272727]">
           <AlertDialogHeader>
             <AlertDialogTitle>Error</AlertDialogTitle>
           </AlertDialogHeader>
@@ -28,7 +29,7 @@ export const ErrorAlert: React.FC<ErrorProps> = ({ message }) => {
             {message}
           </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogCancel className="bg-[#272727] outline-none border border-[#272727]" onClick={() => {window.location.reload()}}>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
