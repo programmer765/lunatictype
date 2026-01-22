@@ -5,7 +5,6 @@ import { AppRouter } from 'backend';
 
 const apiUrl = import.meta.env.VITE_API_URL as string || 'http://localhost:3000';
 // console.log(apiUrl)
-console.log(import.meta.env)
 
 
 export const queryClient = new QueryClient({

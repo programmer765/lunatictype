@@ -14,17 +14,17 @@ const login = publicProcedure.input(z.object({
     const User = await userDb.findByEmail(email);
 
     if(User === null) {
-        return { success: false, message: "User not found" };
+        return { success: false, message: "User not found, Please check your email and try again." };
     }
 
     // Verify password
     if(User.password === undefined || User.password === null) {
-        return { success: false, message: "User has no password set" };
+        return { success: false, message: "User has no password set, Please contact support." };
     }
 
     const isPasswordValid = await userDb.verifyPassword(User.password, password);
     if (!isPasswordValid) {
-        return { success: false, message: "Invalid password" };
+        return { success: false, message: "Invalid password, Please try again." };
     }
 
     const user : UserJWTPayload = {
@@ -35,7 +35,7 @@ const login = publicProcedure.input(z.object({
 
     userDb.createCookie(ctx, user)
 
-    return { success: true };
+    return { success: true, message: "Login successful" };
 
 })
 

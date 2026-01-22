@@ -5,7 +5,6 @@ import Login from '../Components/AuthPageComponents/Login'
 import Signup from '../Components/AuthPageComponents/Signup'
 import { useIsLoggedIn } from '../server/router/getDataFromServer'
 import Loading from '../Components/Loading'
-import { ErrorAlert } from '@repo/ui'
 
 interface decodedState {
   from: string;
@@ -48,8 +47,7 @@ const AuthPage : React.FC = () => {
         navigate('/');
       }
       if(isLoggedIn.error) {
-        console.log(isLoggedIn.error.message)
-        ErrorAlert({message: isLoggedIn.error.message});
+        setIsLoading(false);
       }
     };
     checkLoggedIn();

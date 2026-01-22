@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { useGetGithubTokenLink, useGetGoogleAuthLink, useGetGoogleTokenLink, useGetGithubAuthLink, useLogin } from '../../server/router/getDataFromServer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Loading from '../Loading';
+import { ErrorAlert } from '@repo/ui';
 
 interface LoginProps {
   handleSetAuthFrom: (value: string) => void;
@@ -28,6 +29,8 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
   const [email, setEmail] = useState<z.infer<typeof emailSchema>>("")
   const [password, setPassword] = useState<z.infer<typeof passwordSchema>>("")
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("Server error. Please try again after sometime.");
 
   const isEmailValid = emailSchema.safeParse(email).success;
   const isPasswordValid = passwordSchema.safeParse(password).success;
@@ -44,25 +47,45 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
   const loginUser = useLogin();
 
   const handleGoogleLogin = async () => {
-    const state = JSON.stringify({ from: 'login', method: 'google' });
-    setIsLoading(true);
-    const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
-    window.location.href = result.url;
+    try {
+      const state = JSON.stringify({ from: 'login', method: 'google' });
+      setIsLoading(true);
+      const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
+      window.location.href = result.url;
+    }
+    catch (error) {
+      setIsError(true);
+      setIsLoading(false);
+    }
   }
 
   const handleGithubLogin = async () => {
-    const state = JSON.stringify({ from: 'login', method: 'github' });
-    setIsLoading(true);
-    const result = await githubAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
-    window.location.href = result.url;
+    try {
+      const state = JSON.stringify({ from: 'login', method: 'github' });
+      setIsLoading(true);
+      const result = await githubAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
+      window.location.href = result.url;
+    }
+    catch (error) {
+      setIsError(true);
+      setIsLoading(false);
+    }
   }
 
   const handleLogin = async () => {
-    setIsLoading(true);
-    const result = await loginUser.mutateAsync({ email: email, password: password });
-    if (result.success) {
-      navigate('/');
-    } else {
+    try {
+      setIsLoading(true);
+      const result = await loginUser.mutateAsync({ email: email, password: password });
+      if (result.success) {
+        navigate('/');
+      } else {
+        console.log(result.success)
+        setErrorMessage(result.message);
+        setIsLoading(false);
+      }
+    }
+    catch (error) {
+      setIsError(true);
       setIsLoading(false);
     }
   }
@@ -114,6 +137,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
   return (
     <div>
       {isLoading && <Loading />}
+      { isError && <ErrorAlert message={errorMessage} /> }
       <div className='text-sm'>Please log in to continue.</div>
       <div className='pt-4'>
         <div onClick={handleGoogleLogin} className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>
