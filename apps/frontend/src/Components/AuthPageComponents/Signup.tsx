@@ -6,6 +6,7 @@ import * as z from 'zod';
 import Loading from '../Loading';
 import { useNavigate } from 'react-router-dom';
 import { useGetGithubTokenLink, useGetGoogleAuthLink, useGetGoogleTokenLink, useGetGithubAuthLink, useSignup } from '../../server/router/getDataFromServer';
+import { ErrorAlert } from '@repo/ui';
 
 
 
@@ -33,6 +34,8 @@ const Signup : React.FC<SignupProps> = ({ handleSetAuthFrom }) => {
   const [password, setPassword] = useState<z.infer<typeof passwordSchema>>("")
   const [username, setUsername] = useState<z.infer<typeof usernameSchema>>("")
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("Server error. Please try again after sometime.");
 
   const isEmailValid = emailSchema.safeParse(email).success;
   const isPasswordValid = passwordSchema.safeParse(password).success;
@@ -50,25 +53,45 @@ const Signup : React.FC<SignupProps> = ({ handleSetAuthFrom }) => {
   const signupUser = useSignup();
 
   const handleGoogleSignup = async () => {
-    const state = JSON.stringify({ from: 'signup', method: 'google' });
-    setIsLoading(true);
-    const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
-    window.location.href = result.url;
+    try {
+      const state = JSON.stringify({ from: 'signup', method: 'google' });
+      setIsLoading(true);
+      const result = await googleAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
+      window.location.href = result.url;
+    }
+    catch (error) {
+      setIsError(true);
+      setIsLoading(false);
+    }
   }
 
   const handleGithubSignup = async () => {
-    const state = JSON.stringify({ from: 'signup', method: 'github' });
-    setIsLoading(true);
-    const result = await githubAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
-    window.location.href = result.url;
+    try {
+      const state = JSON.stringify({ from: 'signup', method: 'github' });
+      setIsLoading(true);
+      const result = await githubAuthLink.mutateAsync({ redirect_url: window.location.href, state: encodeURIComponent(state) });
+      window.location.href = result.url;
+    }
+    catch (error) {
+      setIsError(true);
+      setIsLoading(false);
+    }
   }
 
   const handleSignup = async () => {
-    setIsLoading(true);
-    const result = await signupUser.mutateAsync({ email: email, password: password, username: username });
-    if (result.success) {
-      navigate('/');
-    } else {
+    try {
+      setIsLoading(true);
+      const result = await signupUser.mutateAsync({ email: email, password: password, username: username });
+      if (result.success) {
+        navigate('/');
+      } else {
+        setIsError(true);
+        setErrorMessage(result.message);
+        setIsLoading(false);
+      }
+    }
+    catch (error) {
+      setIsError(true);
       setIsLoading(false);
     }
   }
@@ -118,6 +141,7 @@ const Signup : React.FC<SignupProps> = ({ handleSetAuthFrom }) => {
   return (
     <div>
       { isLoading && <Loading /> }
+      { isError && <ErrorAlert message={errorMessage} /> }
       <div className='text-sm'>Please sign up to continue.</div>
         <div className='pt-4'>
           <div onClick={handleGoogleSignup} className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>

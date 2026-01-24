@@ -80,6 +80,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
         navigate('/');
       } else {
         console.log(result.success)
+        setIsError(true);
         setErrorMessage(result.message);
         setIsLoading(false);
       }

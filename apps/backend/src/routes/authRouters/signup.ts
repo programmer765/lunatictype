@@ -42,7 +42,7 @@ const signup = publicProcedure.input(z.object({
 
         userDb.createCookie(ctx, user)
 
-        return { success: true };
+        return { success: true, message: "Signup successful" };
     }
     catch (error) {
         return { success: false, message: (error instanceof Error) ? error.message : "An unknown error occurred" };
