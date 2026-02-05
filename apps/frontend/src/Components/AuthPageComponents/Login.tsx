@@ -105,30 +105,38 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
     handleSetAuthFrom(from);
     if(from !== 'login') return;
     const fetchToken = async() => {
-      sessionStorage.setItem('isOauthTokenFetched', 'true');
-      setIsLoading(true);
-      let isSuccess = false;
-      if(method === 'google') {
-        const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
-        isSuccess = success;
-        // console.log(message)
-      }
-      else if(method === 'github') {
-        // console.log("executing github login")
-        const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
-        isSuccess = success;
-        // console.log(message)
-      }
-      // console.log(isSuccess);
-      if (isSuccess === true) {
-        // Token fetched successfully
+      try {
+
+        sessionStorage.setItem('isOauthTokenFetched', 'true');
+        setIsLoading(true);
+        let isSuccess = false;
+        if(method === 'google') {
+          const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
+          isSuccess = success;
+          // console.log(message)
+        }
+        else if(method === 'github') {
+          console.log("executing github login")
+          const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
+          isSuccess = success;
+          // console.log(message)
+        }
+        // console.log(isSuccess);
+        if (isSuccess === false) {
+          // Token fetched successfully
+          throw new Error('Failed to fetch OAuth token');
+        }
         sessionStorage.removeItem('isOauthTokenFetched');
         window.location.href = '/'
-      } else {
-        // Handle error
-        sessionStorage.setItem('isOauthTokenFetched', 'false')
+      }
+      catch (error) {
+        const msg = error instanceof Error ? error.message : 'Server error. Please try again after sometime.';
+        setErrorMessage(msg);
         setIsLoading(false);
+        setIsError(true);
+        sessionStorage.setItem('isOauthTokenFetched', 'false')
         navigate('/v1/auth', { replace: true })
+
       }
     }
     fetchToken();

@@ -21,9 +21,10 @@ const userDb = {
 
     findByGithubId: async (github_id: string) => {
         try {
-            return await client.user.findUnique({
+            const user = await client.user.findUnique({
                 where: { github_id: github_id }
             });
+            return user;
         } catch (error: any) {
             console.error("Error finding user by GitHub ID:", error.message);
             throw new Error(user_not_found);

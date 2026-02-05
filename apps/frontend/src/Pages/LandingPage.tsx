@@ -9,11 +9,14 @@ import PlayOnline from "./PlayOnline";
 import { useIsLoggedIn } from "../server/router/getDataFromServer";
 import Loading from "../Components/Loading";
 import User from "../types/User";
+import { ErrorAlert } from "@repo/ui";
 
 const LandingPage : React.FC = () => {
 
   const [isPractice, setIsPractice] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+
   const container = {
     hidden: { opacity: 1, scale: 0 },
     visible: {
@@ -40,6 +43,9 @@ const LandingPage : React.FC = () => {
   
 
   const updatePlayType = (practice: boolean, online: boolean) => {
+    if(practice === false && online === true && (user === null || user === undefined)) {
+      setIsError(true);
+    }
     setIsPractice(practice)
     setIsOnline(online)
   }
@@ -66,6 +72,7 @@ const LandingPage : React.FC = () => {
 
   return (
     <motion.div>
+      { isError && <ErrorAlert message="Please log in to play online." /> }
       { isLoading && <Loading />}
       <motion.div className='h-screen bg-[#202020] flex flex-col'>
         <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }} className="flex flex-col h-full">
