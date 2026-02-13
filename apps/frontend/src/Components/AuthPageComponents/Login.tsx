@@ -110,21 +110,29 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
         sessionStorage.setItem('isOauthTokenFetched', 'true');
         setIsLoading(true);
         let isSuccess = false;
+        let msg = '';
         if(method === 'google') {
-          const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
+          const { success, message } = await googleTokenLink.mutateAsync({ code: code, state: state })
           isSuccess = success;
+          msg = message;
           // console.log(message)
         }
         else if(method === 'github') {
           console.log("executing github login")
-          const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
+          const { success, message } = await githubTokenLink.mutateAsync({ code: code, state: state })
           isSuccess = success;
+          msg = message;
           // console.log(message)
         }
         // console.log(isSuccess);
         if (isSuccess === false) {
-          // Token fetched successfully
-          throw new Error('Failed to fetch OAuth token');
+          // Token fetch failed
+          if(msg) {
+            throw new Error(msg);
+          }
+          else {
+            throw new Error('Failed to fetch OAuth token');
+          }
         }
         sessionStorage.removeItem('isOauthTokenFetched');
         window.location.href = '/'

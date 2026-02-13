@@ -7,7 +7,7 @@
     "clean": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b",
-    "dev": "set NODE_ENV=development&& pnpm run clean && tsc -b && nodemon",
+    "dev": "set NODE_ENV=development&& nodemon",
     "start": "set NODE_ENV=production&& pnpm run clean && tsc -b && nodemon",
     "render": "pnpm run clean && tsc -b && nodemon",
     "postinstall": "prisma generate"
@@ -16,7 +16,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "6.15.0",
+    "@prisma/adapter-pg": "^7.4.0",
+    "@prisma/client": "7.4.0",
     "@repo/ui": "workspace:*",
     "@supabase/supabase-js": "^2.57.0",
     "@trpc/server": "^11.4.1",
@@ -41,7 +42,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
     "nodemon": "^3.1.10",
-    "prisma": "^6.15.0",
+    "prisma": "^7.4.0",
     "ts-node": "^10.9.2"
   }
 }

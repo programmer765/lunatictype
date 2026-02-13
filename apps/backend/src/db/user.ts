@@ -26,8 +26,8 @@ const userDb = {
             });
             return user;
         } catch (error: any) {
-            console.error("Error finding user by GitHub ID:", error.message);
-            throw new Error(user_not_found);
+            console.log("Error finding user by GitHub ID:", error.message);
+            return null;
         }
     },
 

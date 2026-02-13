@@ -22,7 +22,7 @@ export const ErrorAlert: React.FC<ErrorProps> = ({ message }) => {
     <>
       <AlertDialog open={true}>
         <AlertDialogContent className="text-white bg-[#111111] outline-none border border-[#272727]">
-          <AlertDialogHeader className="font-bold">
+          <AlertDialogHeader className="font-bold border-[#272727] border-b py-1">
             <AlertDialogTitle>Error</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription className="font-light">

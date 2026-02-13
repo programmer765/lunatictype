@@ -104,7 +104,7 @@ const github = router({
             return { success: true, message: "Authentication successful" };
 
         } catch (error: any) {
-            console.log(error.response.data);
+            console.log("printing error", error.message)
             return { success: false, message: error.message };
         }
     })

@@ -13,6 +13,6 @@
       "declarationMap": false,
 
     },
-    "exclude": ["node_modules"],
+    "exclude": ["node_modules", "prisma.config.ts", "dist", "prisma"],
     "include": [".", "src", "types", "src/routes"]
 }

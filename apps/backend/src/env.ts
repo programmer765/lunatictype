@@ -26,3 +26,6 @@ export const supabase_anon_key = process.env.SUPABASE_ANON_KEY ?? "";
 
 //user info token name
 export const userInfoTokenName = process.env.USER_INFO_TOKEN_NAME ?? "";
+
+// database
+export const database_url = process.env.DATABASE_URL ?? "";
