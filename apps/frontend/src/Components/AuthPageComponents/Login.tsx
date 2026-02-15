@@ -106,7 +106,6 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
     if(from !== 'login') return;
     const fetchToken = async() => {
       try {
-
         sessionStorage.setItem('isOauthTokenFetched', 'true');
         setIsLoading(true);
         let isSuccess = false;
@@ -127,12 +126,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
         // console.log(isSuccess);
         if (isSuccess === false) {
           // Token fetch failed
-          if(msg) {
-            throw new Error(msg);
-          }
-          else {
-            throw new Error('Failed to fetch OAuth token');
-          }
+          throw new Error(msg || 'Failed to fetch OAuth token');
         }
         sessionStorage.removeItem('isOauthTokenFetched');
         window.location.href = '/'

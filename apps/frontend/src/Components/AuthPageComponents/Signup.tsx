@@ -110,27 +110,39 @@ const Signup : React.FC<SignupProps> = ({ handleSetAuthFrom }) => {
     if(from !== 'signup') return;
     // sessionStorage.setItem('fetched_oauth_token', 'false');
     const fetchToken = async() => {
-      sessionStorage.setItem('isOauthTokenFetched', 'true');
-      setIsLoading(true);
-      let isSuccess = false;
-      if(method === 'google') {
-        const { success } = await googleTokenLink.mutateAsync({ code: code, state: state })
-        isSuccess = success;
-        // console.log(message)
+      try {
+        let msg = ''
+        sessionStorage.setItem('isOauthTokenFetched', 'true');
+        setIsLoading(true);
+        let isSuccess = false;
+        if(method === 'google') {
+          const { success, message } = await googleTokenLink.mutateAsync({ code: code, state: state })
+          isSuccess = success;
+          msg = message;
+          // console.log(message)
+        }
+        else if(method === 'github') {
+          console.log("executing github signup")
+          const { success, message } = await githubTokenLink.mutateAsync({ code: code, state: state })
+          isSuccess = success;
+          msg = message;
+        }
+        // console.log(isSuccess);
+        if (isSuccess === true) {
+          // Token fetched successfully
+          sessionStorage.removeItem('isOauthTokenFetched');
+          window.location.href = '/'
+        } else {
+          // Handle error
+          throw new Error(msg || 'Failed to fetch OAuth token');
+        }
       }
-      else if(method === 'github') {
-        console.log("executing github signup")
-        const { success } = await githubTokenLink.mutateAsync({ code: code, state: state })
-        isSuccess = success;
-      }
-      // console.log(isSuccess);
-      if (isSuccess === true) {
-        // Token fetched successfully
-        sessionStorage.removeItem('isOauthTokenFetched');
-        window.location.href = '/'
-      } else {
-        // Handle error
+      catch (error) {
+        const msg = error instanceof Error ? error.message : 'Server error. Please try again after sometime.';
+        setErrorMessage(msg);
         setIsLoading(false);
+        setIsError(true);
+        sessionStorage.setItem('isOauthTokenFetched', 'false');
         navigate('/v1/auth', { replace: true })
       }
     }
