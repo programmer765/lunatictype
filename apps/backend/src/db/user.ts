@@ -97,7 +97,7 @@ const userDb = {
             ctx.res.cookie(userInfoTokenName, userInfoToken, { 
                 httpOnly: true,
                 secure: node_env === "production",
-                sameSite: "none",
+                sameSite: node_env === "production" ? "none" : "lax",
                 maxAge: jwt_expiry * 1000 // 1 day
             });
         }
@@ -112,7 +112,7 @@ const userDb = {
             ctx.res.clearCookie(cookieName, {
                 httpOnly: true,
                 secure: node_env === "production",
-                sameSite: "none",
+                sameSite: node_env === "production" ? "none" : "lax",
             })
         }
         catch(err : any) {
