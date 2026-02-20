@@ -37,7 +37,7 @@ const useIsLoggedIn = () => {
         refetchOnMount: false,
         refetchOnWindowFocus: false,
         staleTime: Infinity,
-        retry: 0,
+        retry: false,
     }))
 }
 

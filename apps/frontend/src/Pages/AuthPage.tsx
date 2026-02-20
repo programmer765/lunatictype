@@ -35,7 +35,7 @@ const AuthPage : React.FC = () => {
   }
 
   const [isLoading, setIsLoading] = useState(false);
-  // Hook to check if user is logged in
+  // Check if user is logged in
   const isLoggedIn = useIsLoggedIn();
 
   useEffect(() => {
