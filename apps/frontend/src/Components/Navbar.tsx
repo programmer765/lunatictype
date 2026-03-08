@@ -3,28 +3,29 @@ import LoginButton from "./LoginButton";
 import SignUpButton from "./SignUpButton";
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import { FaHome } from "react-icons/fa";
-import User from "../types/User";
 import Profile from "./Profile/Profile";
+import { useNavigate } from "react-router-dom";
+import useHomeStore from "../store/homeStore";
+import useUserStore from "../store/userStore";
 
-interface NavbarProps {
-    isPractice: boolean;
-    isOnline: boolean;
-    setIsPractice: (isPractice: boolean) => void;
-    setIsOnline: (isOnline: boolean) => void;
-    user?: User
-}
+export const Navbar : React.FC = () => {
 
-const handleLunaticTypeClick = (setIsPractice: (isPractice: boolean) => void, setIsOnline: (isOnline: boolean) => void) => {
-    setIsPractice(false);
-    setIsOnline(false);
-}
+    const navigate = useNavigate();
+    const setIsHome = useHomeStore((state) => state.setIsHome);
+    const isHome = useHomeStore((state) => state.isHome);
+    const user = useUserStore((state) => state.user);
 
-export const Navbar : React.FC<NavbarProps> = ({ isPractice, isOnline, setIsPractice, setIsOnline, user }) => {
+    const handleHomeBtnClick = () => {
+        if(isHome) return;
+        setIsHome(true);
+        navigate("/");
+    }
+
     return (
         <div className="py-5 text-white px-5">
             <div className="flex justify-between">
                 <div className="flex items-center">
-                    <div className="md:text-5xl text-1xl font-semibold font-mono text-[#d4dce4] hover:cursor-pointer" onClick={() => handleLunaticTypeClick(setIsPractice, setIsOnline)}>
+                    <div className="md:text-5xl text-1xl font-semibold font-mono text-[#d4dce4] hover:cursor-pointer" onClick={handleHomeBtnClick}>
                         <Link to="/">
                             lunatictype
                         </Link>
@@ -32,7 +33,7 @@ export const Navbar : React.FC<NavbarProps> = ({ isPractice, isOnline, setIsPrac
                     <div className="px-3">
                         <KeyboardIcon />
                     </div>
-                    <div className={`${isPractice || isOnline ? 'text-white transition-all duration-300' : 'text-gray-500 transition-all duration-300 delay-100'}`} onClick={() => handleLunaticTypeClick(setIsPractice, setIsOnline)}>
+                    <div className={`${!isHome ? 'text-white transition-all duration-300' : 'text-gray-500 transition-all duration-300 delay-100'}`} onClick={handleHomeBtnClick}>
                         <FaHome className="text-2xl cursor-pointer" />
                     </div>
                 </div>

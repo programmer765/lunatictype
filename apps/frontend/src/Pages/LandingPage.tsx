@@ -8,14 +8,21 @@ import Practice from "./Practice";
 import PlayOnline from "./PlayOnline";
 import { useIsLoggedIn } from "../server/router/getDataFromServer";
 import Loading from "../Components/Loading";
-import User from "../types/User";
 import { ErrorAlert } from "@repo/ui";
+import useHomeStore from "../store/homeStore";
+import useUserStore from "../store/userStore";
 
 const LandingPage : React.FC = () => {
 
   const [isPractice, setIsPractice] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
+  const setIsHome = useHomeStore((state) => state.setIsHome);
+  const isHome = useHomeStore((state) => state.isHome);
+  const [isLoading, setIsLoading] = useState(false);
+  const isLoggedIn = useIsLoggedIn();
+  const setUser = useUserStore((state) => state.setUser);
+  const user = useUserStore((state) => state.user);
 
   const container = {
     hidden: { opacity: 1, scale: 0 },
@@ -48,12 +55,14 @@ const LandingPage : React.FC = () => {
     }
     setIsPractice(practice)
     setIsOnline(online)
+    setIsHome(false)
   }
 
-  const [isLoading, setIsLoading] = useState(false);
-  // Hook to check if user is logged in
-  const isLoggedIn = useIsLoggedIn();
-  const [user, setUser] = useState<User | null>(null)
+  useEffect(() => {
+    if(!isHome) return;
+    setIsPractice(false);
+    setIsOnline(false);
+  }, [isHome])
 
   useEffect(() => {
     setIsLoading(true);
@@ -77,12 +86,7 @@ const LandingPage : React.FC = () => {
       <motion.div className='h-screen bg-[#202020] flex flex-col'>
         <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }} className="flex flex-col h-full">
           <motion.div className='' variants={item}>
-              <Navbar 
-                isPractice={isPractice} 
-                setIsPractice={setIsPractice} 
-                isOnline={isOnline} setIsOnline={setIsOnline} 
-                {...(user !== null && user !== undefined && {user: user})} 
-              />
+              <Navbar />
           </motion.div>
           {
             isPractice ? 
