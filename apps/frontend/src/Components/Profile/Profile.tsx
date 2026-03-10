@@ -7,6 +7,7 @@ import { Avatar } from '@mui/material';
 import { useLogout } from '../../server/router/getDataFromServer';
 import Loading from '../Loading';
 import { useNavigate } from 'react-router-dom';
+import useUserStore from '../../store/userStore';
 
 interface ProfileProps {
   user: User
@@ -17,6 +18,7 @@ const Profile : React.FC<ProfileProps> = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const setUser = useUserStore((state) => state.setUser);
 
   const logout = useLogout();
 
@@ -44,6 +46,7 @@ const Profile : React.FC<ProfileProps> = ({ user }) => {
     const res = await logout.refetch();
     setIsLoading(false);
     if(!res.data || !res.data.success) alert('Error signing out, please try again later.');
+    setUser(null);
     navigate(0);
     setIsOpen(false);
   };

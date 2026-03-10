@@ -1,10 +1,58 @@
-import React from 'react'
+import { motion } from 'framer-motion'
+import React, { useEffect, useState } from 'react'
+import { Navbar } from '../../Components/Navbar'
+
+const container = {
+    hidden: { opacity: 1, scale: 0 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delayChildren: 0.6,
+        staggerChildren: 0.4,
+        duration: 0.6,
+      }
+    }
+  }
+
+  const item = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.7
+      }
+    }
+  };
 
 const RandomLandingPage = () => {
+
+  const [isMatching, setIsMatching] = useState<boolean>(true);
+  
+  useEffect(() => {
+    setTimeout(() => setIsMatching(false), 4000);
+  }, []);
+
   return (
-    <div className='h-screen flex items-center justify-center bg-[#202020] text-white text-3xl font-mono'>
-      RandomLandingPage
-    </div>
+    <motion.div className='h-screen flex bg-[#202020] flex-col text-white'>
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="visible"
+        transition={{ ease: "easeIn", duration: 2 }}
+        className='flex flex-col h-full'
+        >
+        <motion.div variants={item}>
+          <Navbar />
+        </motion.div>
+        <motion.div variants={item} className='flex flex-col items-center justify-center h-full'>
+          <motion.h1 className='text-4xl font-bold'>
+            {isMatching ? "Finding you an opponent..." : "No opponents found. Please try again later."}
+          </motion.h1>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   )
 }
 

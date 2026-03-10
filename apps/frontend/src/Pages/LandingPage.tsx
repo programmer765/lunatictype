@@ -6,8 +6,6 @@ import PlayOnlineBtn from "../Components/PlayOnlineBtn";
 import { useState } from "react";
 import Practice from "./Practice";
 import PlayOnline from "./PlayOnline";
-import { useIsLoggedIn } from "../server/router/getDataFromServer";
-import Loading from "../Components/Loading";
 import { ErrorAlert } from "@repo/ui";
 import useHomeStore from "../store/homeStore";
 import useUserStore from "../store/userStore";
@@ -19,9 +17,6 @@ const LandingPage : React.FC = () => {
   const [isError, setIsError] = useState<boolean>(false);
   const setIsHome = useHomeStore((state) => state.setIsHome);
   const isHome = useHomeStore((state) => state.isHome);
-  const [isLoading, setIsLoading] = useState(false);
-  const isLoggedIn = useIsLoggedIn();
-  const setUser = useUserStore((state) => state.setUser);
   const user = useUserStore((state) => state.user);
 
   const container = {
@@ -59,30 +54,18 @@ const LandingPage : React.FC = () => {
   }
 
   useEffect(() => {
+    setIsHome(true);
+  }, [])
+
+  useEffect(() => {
     if(!isHome) return;
     setIsPractice(false);
     setIsOnline(false);
   }, [isHome])
 
-  useEffect(() => {
-    setIsLoading(true);
-    const checkLoggedIn = () => {
-      if(isLoggedIn.data?.user !== null && isLoggedIn.data?.user !== undefined) {
-        setUser(isLoggedIn.data?.user)
-      }
-      if(isLoggedIn.error) {
-        console.log(isLoggedIn.error.message)
-      }
-      setIsLoading(false);
-    };
-    checkLoggedIn();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn.isLoading]);
-
   return (
     <motion.div>
       { isError && <ErrorAlert message="Please log in to play online." /> }
-      { isLoading && <Loading />}
       <motion.div className='h-screen bg-[#202020] flex flex-col'>
         <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }} className="flex flex-col h-full">
           <motion.div className='' variants={item}>

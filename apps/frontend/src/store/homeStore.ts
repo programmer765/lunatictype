@@ -6,7 +6,7 @@ interface HomeStore {
 }
 
 const useHomeStore = create<HomeStore>((set) => ({
-    isHome: true,
+    isHome: false,
     setIsHome: (isHome: boolean) => set({ isHome }),
 }));
 
