@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
 import { Navbar } from '../../Components/Navbar'
+import useUserStore from '../../store/userStore'
+import { useNavigate } from 'react-router-dom'
 
 const container = {
     hidden: { opacity: 1, scale: 0 },
@@ -29,6 +31,14 @@ const container = {
 const PlayRandomLandingPage = () => {
 
   const [isMatching, setIsMatching] = useState<boolean>(true);
+  const user = useUserStore((state) => state.user);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if(user === null) {
+      navigate('/v1/auth');
+    }
+  }, [user, navigate]);
   
   useEffect(() => {
     setTimeout(() => setIsMatching(false), 4000);
