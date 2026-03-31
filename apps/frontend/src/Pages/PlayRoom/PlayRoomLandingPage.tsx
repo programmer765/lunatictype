@@ -1,6 +1,6 @@
 import React from 'react'
 
-const RoomLandingPage = () => {
+const PlayRoomLandingPage = () => {
   return (
     <div className='h-screen flex items-center justify-center bg-[#202020] text-white text-3xl font-mono'>
       <div>Coming Soon..</div>
@@ -8,4 +8,4 @@ const RoomLandingPage = () => {
   )
 }
 
-export default RoomLandingPage
+export default PlayRoomLandingPage

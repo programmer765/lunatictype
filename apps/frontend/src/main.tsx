@@ -5,10 +5,10 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import LandingPage from './Pages/LandingPage'
 import AuthPage from './Pages/AuthPage'
 import ErrorPage from './Pages/ErrorPage'
-import RoomLandingPage from './Pages/Room/RoomLandingPage'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './utils/trpc'
-import RandomLandingPage from './Pages/Random/RandomLandingPage'
+import PlayRandomLandingPage from './Pages/PlayRandom/PlayRandomLandingPage'
+import PlayRoomLandingPage from './Pages/PlayRoom/PlayRoomLandingPage'
 
 const router = createBrowserRouter([
   {
@@ -22,11 +22,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/play/online/room',
-    element: <RoomLandingPage />
+    element: <PlayRoomLandingPage />
   },
   {
     path: '/play/online/random',
-    element: <RandomLandingPage />
+    element: <PlayRandomLandingPage />
   }
 ])
 

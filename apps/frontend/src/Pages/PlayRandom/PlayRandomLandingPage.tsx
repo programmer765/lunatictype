@@ -26,7 +26,7 @@ const container = {
     }
   };
 
-const RandomLandingPage = () => {
+const PlayRandomLandingPage = () => {
 
   const [isMatching, setIsMatching] = useState<boolean>(true);
   
@@ -41,7 +41,7 @@ const RandomLandingPage = () => {
         initial="hidden"
         animate="visible"
         transition={{ ease: "easeIn", duration: 2 }}
-        className='flex flex-col h-full'
+        className='flex flex-col h-full overflow-hidden'
         >
         <motion.div variants={item}>
           <Navbar />
@@ -56,4 +56,4 @@ const RandomLandingPage = () => {
   )
 }
 
-export default RandomLandingPage
+export default PlayRandomLandingPage
