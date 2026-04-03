@@ -30,14 +30,23 @@ const container = {
 
 const PlayRoomLandingPage = () => {
   const user = useUserStore((state) => state.user);
+  const userIsLoading = useUserStore((state) => state.userIsLoading);
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   if(user === null) {
+  //     navigate('/v1/auth');
+  //   }
+  // }, [user, navigate]);
+
+
   useEffect(() => {
-    if(user === null) {
+    if(userIsLoading) return; // Wait until we know if the user is logged in or not
+    if(user === null || user === undefined) {
       navigate('/v1/auth');
     }
-  }, [user, navigate]);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIsLoading])
 
 
   return (

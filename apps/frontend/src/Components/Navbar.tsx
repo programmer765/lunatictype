@@ -20,6 +20,7 @@ export const Navbar : React.FC = () => {
 	const [isLoading, setIsLoading] = useState(false);
   const isLoggedIn = useIsLoggedIn();
   const setUser = useUserStore((state) => state.setUser);
+	const setUserIsLoading = useUserStore((state) => state.setUserIsLoading);
 
 	const handleHomeBtnClick = () => {
 		if(isHome) return;
@@ -29,9 +30,11 @@ export const Navbar : React.FC = () => {
 
 	useEffect(() => {
 		setIsLoading(true);
+		setUserIsLoading(true);
 		const checkLoggedIn = () => {
 			if(isLoggedIn.data?.user !== null && isLoggedIn.data?.user !== undefined) {
 				setUser(isLoggedIn.data?.user)
+				setUserIsLoading(false);
 			}
 			if(isLoggedIn.error) {
 				console.log(isLoggedIn.error.message)

@@ -32,14 +32,18 @@ const PlayRandomLandingPage = () => {
 
   const [isMatching, setIsMatching] = useState<boolean>(true);
   const user = useUserStore((state) => state.user);
+  const userIsLoading = useUserStore((state) => state.userIsLoading);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(user === null) {
+    if(userIsLoading) return; // Wait until we know if the user is logged in or not
+    if(user === null || user === undefined) {
       navigate('/v1/auth');
     }
-  }, [user, navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIsLoading])
   
+
   useEffect(() => {
     setTimeout(() => setIsMatching(false), 4000);
   }, []);
@@ -60,6 +64,11 @@ const PlayRandomLandingPage = () => {
           <motion.h1 className='text-4xl font-bold'>
             {isMatching ? "Finding you an opponent..." : "No opponents found. Please try again later."}
           </motion.h1>
+        </motion.div>
+        <motion.div variants={item} className='flex justify-center mb-5'>
+          <div className='bg-black px-4 py-2 rounded-md text-sm font-semibold text-yellow-600'>
+            Please don't leave or refresh the page while we are finding you an opponent!
+          </div>
         </motion.div>
       </motion.div>
     </motion.div>

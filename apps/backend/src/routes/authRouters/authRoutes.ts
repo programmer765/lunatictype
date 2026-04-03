@@ -16,6 +16,7 @@ const authRouter = router({
     github: github,
 
     isLoggedIn: protectedProcedure.query(({ ctx }) => {
+        console.log(`-------------\nisLoggedIn\n-------------`)
         if(ctx.user) {
             return { success: true, message: "User is logged in", user: ctx.user }
         }
