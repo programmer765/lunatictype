@@ -6,7 +6,7 @@ import signup from "./signup";
 import userDb from "../../db/user";
 import { userInfoTokenName } from "../../env";
 
-const authRouter = router({
+const authRouters = router({
     login: login,
 
     signup: signup,
@@ -35,4 +35,4 @@ const authRouter = router({
 
 })
 
-export default authRouter;
+export default authRouters;

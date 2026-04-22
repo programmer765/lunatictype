@@ -35,7 +35,7 @@ const wordCount = process.env.WORD_COUNT ? parseInt(process.env.WORD_COUNT) : 50
 
 // export default router;
 
-const randomWordRouter = router({
+const randomWordRouters = router({
     generate: publicProcedure.query(() => {
         try {
             console.log('api/randomWordRouter.generate')
@@ -56,4 +56,4 @@ const randomWordRouter = router({
     })
 })
 
-export default randomWordRouter;
+export default randomWordRouters;

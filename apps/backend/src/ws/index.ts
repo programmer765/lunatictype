@@ -1,25 +1,21 @@
 
 import { WebSocketServer } from 'ws';
 import { Server } from 'http';
-import { Pool } from './pool';
+import { pool } from '../matchmaking/pool';
+import matchMakingRoute from './matchmakingRoute';
 
 export function initWebSocketServer(server: Server) {
   const wss = new WebSocketServer({ server });
-  const pool = new Pool();
 
   wss.on('connection', (ws, req) => {
     const url = new URL(req.url!, `http://${req.headers.host}`);
     const pathName = url.pathname;
 
-    if (pathName === '/ws/chat') {
-      console.log('New client connected to /ws/chat');
+    if (pathName === '/ws/matchmaking') {
+      matchMakingRoute(ws, url);
     }
-    else if (pathName === '/ws/notifications') {
-      console.log('New client connected to /ws/notifications');
-    }
-    else if (pathName === '/ws/matchmaking') {
-      console.log('New client connected to /ws/matchmaking');
-
+    else if (pathName === '/ws/') {
+      
     }
     else {
       ws.close(1008, 'Invalid path');
