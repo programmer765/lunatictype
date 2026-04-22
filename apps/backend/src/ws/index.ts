@@ -14,7 +14,7 @@ export function initWebSocketServer(server: Server) {
     if (pathName === '/ws/matchmaking') {
       matchMakingRoute(ws, url);
     }
-    else if (pathName === '/ws/') {
+    else if (pathName.startsWith('/ws/match/id/')) {
       
     }
     else {

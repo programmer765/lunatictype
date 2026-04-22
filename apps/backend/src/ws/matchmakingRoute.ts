@@ -29,10 +29,10 @@ export default function matchMakingRoute(ws: WebSocket, url: URL) {
   }, 30000);
 
   // Add user to matchmaking pool
-  pool.join(userId, (match) => {
+  pool.join(userId, (match, matchId) => {
     clearTimeout(timeOut);
-    console.log(`Match found for User ${userId}: User ${match[0]} vs User ${match[1]}`);
-    ws.send(JSON.stringify({ type: 'match_found', users: match }));
+    console.log(`Match found for User ${userId}: User ${match[0]} vs User ${match[1]}`);    
+    ws.send(JSON.stringify({ type: 'match_found', users: match, matchId: matchId }));
     ws.close(1000, 'Match found');
   });
   console.log(`User ${userId} added to matchmaking pool`);

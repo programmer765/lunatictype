@@ -1,4 +1,4 @@
-type MatchCallback = (match: [number, number]) => void;
+type MatchCallback = (match: [number, number], matchId: string) => void;
 
 
 class Pool {
@@ -12,7 +12,7 @@ class Pool {
     this.cancelledUsers = new Map();
     this.activeUsers = new Set();
     this.findMatchCallback = new Map();
-    console.log('Pool is started')
+    console.log('Pool has started')
   }
 
   join(userId: number, callback: MatchCallback) {
@@ -26,11 +26,11 @@ class Pool {
   }
 
   cancelUser(userId: number) {
-    if (this.activeUsers.has(userId)) {
-      this.activeUsers.delete(userId);
+    if (!this.activeUsers.has(userId)) {
+      return;
     }
+    this.activeUsers.delete(userId);
     this.cancelledUsers.set(userId, (this.cancelledUsers.get(userId) ?? 0) + 1);
-    this.findMatchCallback.delete(userId);
   }
 
   private findMatch() {
@@ -43,11 +43,17 @@ class Pool {
 
       if (cancelledCount1) {
         this.cancelledUsers.set(userId1, cancelledCount1 - 1);
+        if (cancelledCount1 - 1 === 0) {
+          this.findMatchCallback.delete(userId1);
+        }
         continue;
       }
 
       if (cancelledCount2) {
         this.cancelledUsers.set(userId2, cancelledCount2 - 1);
+        if (cancelledCount2 - 1 === 0) {
+          this.findMatchCallback.delete(userId2);
+        }
         continue;
       }
 
@@ -57,13 +63,14 @@ class Pool {
         this.activeUsers.delete(userId2);
 
         const callback1 = this.findMatchCallback.get(userId1);
+        const matchId = crypto.randomUUID();
         if (callback1) {
-          callback1([userId1, userId2]);
+          callback1([userId1, userId2], matchId);
         }
 
         const callback2 = this.findMatchCallback.get(userId2);
         if (callback2) {
-          callback2([userId1, userId2]);
+          callback2([userId1, userId2], matchId);
         }
 
         this.findMatchCallback.delete(userId1);
