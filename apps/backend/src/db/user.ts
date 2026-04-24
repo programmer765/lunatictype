@@ -8,6 +8,17 @@ import jwt from "jsonwebtoken"
 const user_not_found = "User not found";
 
 const userDb = {
+    findByUserId: async (inId: number) => {
+        try {
+            return await client.user.findUnique({
+                where: { id: inId },
+            });
+        } catch (error: any) {
+            console.error("Error finding user by ID:", error.message);
+            throw new Error(user_not_found);
+        }
+    },
+
     findByGoogleId: async (google_id: string) => {
         try {
             return await client.user.findUnique({

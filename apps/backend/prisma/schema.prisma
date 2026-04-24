@@ -27,3 +27,12 @@ model User {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 }
+
+
+model RandomMatch {
+  id          Int       @id @default(autoincrement())
+  player1Id   Int
+  player2Id   Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

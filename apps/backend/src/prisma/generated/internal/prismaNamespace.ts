@@ -384,7 +384,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  User: 'User'
+  User: 'User',
+  RandomMatch: 'RandomMatch'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -400,7 +401,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user"
+    modelProps: "user" | "randomMatch"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -478,6 +479,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RandomMatch: {
+      payload: Prisma.$RandomMatchPayload<ExtArgs>
+      fields: Prisma.RandomMatchFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RandomMatchFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RandomMatchFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>
+        }
+        findFirst: {
+          args: Prisma.RandomMatchFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RandomMatchFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>
+        }
+        findMany: {
+          args: Prisma.RandomMatchFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>[]
+        }
+        create: {
+          args: Prisma.RandomMatchCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>
+        }
+        createMany: {
+          args: Prisma.RandomMatchCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RandomMatchCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>[]
+        }
+        delete: {
+          args: Prisma.RandomMatchDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>
+        }
+        update: {
+          args: Prisma.RandomMatchUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>
+        }
+        deleteMany: {
+          args: Prisma.RandomMatchDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RandomMatchUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RandomMatchUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>[]
+        }
+        upsert: {
+          args: Prisma.RandomMatchUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RandomMatchPayload>
+        }
+        aggregate: {
+          args: Prisma.RandomMatchAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRandomMatch>
+        }
+        groupBy: {
+          args: Prisma.RandomMatchGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RandomMatchGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RandomMatchCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RandomMatchCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -533,6 +608,17 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const RandomMatchScalarFieldEnum = {
+  id: 'id',
+  player1Id: 'player1Id',
+  player2Id: 'player2Id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RandomMatchScalarFieldEnum = (typeof RandomMatchScalarFieldEnum)[keyof typeof RandomMatchScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -723,6 +809,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  randomMatch?: Prisma.RandomMatchOmit
 }
 
 /* Types for Logging */

@@ -51,7 +51,8 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  User: 'User'
+  User: 'User',
+  RandomMatch: 'RandomMatch'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -86,6 +87,17 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const RandomMatchScalarFieldEnum = {
+  id: 'id',
+  player1Id: 'player1Id',
+  player2Id: 'player2Id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RandomMatchScalarFieldEnum = (typeof RandomMatchScalarFieldEnum)[keyof typeof RandomMatchScalarFieldEnum]
 
 
 export const SortOrder = {

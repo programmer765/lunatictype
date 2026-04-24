@@ -1,8 +1,8 @@
 
 import { WebSocketServer } from 'ws';
 import { Server } from 'http';
-import { pool } from '../matchmaking/pool';
-import matchMakingRoute from './matchmakingRoute';
+import handleMatchMaking from './handleMatchMaking';
+import handleMatch from './handleMatch';
 
 export function initWebSocketServer(server: Server) {
   const wss = new WebSocketServer({ server });
@@ -12,16 +12,16 @@ export function initWebSocketServer(server: Server) {
     const pathName = url.pathname;
 
     if (pathName === '/ws/matchmaking') {
-      matchMakingRoute(ws, url);
+      handleMatchMaking(ws, url);
     }
-    else if (pathName.startsWith('/ws/match/id/')) {
-      
+    else if (pathName.startsWith('/ws/match?matchId=')) {
+      handleMatch(ws, url);
     }
     else {
       ws.close(1008, 'Invalid path');
       console.log('Client attempted to connect to invalid path:', pathName);
       return;
-    }
+    } 
 
     ws.on('message', (message) => {
       console.log('received: %s', message);

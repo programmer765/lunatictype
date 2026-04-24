@@ -2,7 +2,7 @@ import { WebSocket } from "ws";
 import { pool } from "../matchmaking/pool";
 
 
-export default function matchMakingRoute(ws: WebSocket, url: URL) {
+export default function handleMatchMaking(ws: WebSocket, url: URL) {
 
   // Validate that userId parameter is present
   const userIdParam = url.searchParams.get('userId');
