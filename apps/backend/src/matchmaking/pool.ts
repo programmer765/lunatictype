@@ -1,3 +1,5 @@
+import matchStore from "./matchStore";
+
 type MatchCallback = (match: [number, number], matchId: string) => void;
 
 
@@ -75,6 +77,10 @@ class Pool {
 
         this.findMatchCallback.delete(userId1);
         this.findMatchCallback.delete(userId2);
+
+        matchStore.createMatch(matchId, true);
+        matchStore.addUserToMatch(matchId, userId1, null as any);
+        matchStore.addUserToMatch(matchId, userId2, null as any);
 
         return;
       }

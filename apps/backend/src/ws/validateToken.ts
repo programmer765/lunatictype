@@ -16,7 +16,7 @@ export default async function validateToken(token: string): Promise<number> {
     return user.id;
   }
   catch (error) {
-    console.error('Error validating token:', error);
+    // console.error('Error validating token:', error);
     throw new Error(error instanceof Error ? error.message : 'token validation failed');
   }
 }
