@@ -4,8 +4,8 @@ import matchStore from '../matchmaking/matchStore';
 
 const MatchMessageTypes = {
   authenticate: 'authenticate',
-  addUserToMatch: 'add_user_to_match',
-  updateUserPosition: 'update_user_position'
+  updateUserPosition: 'update_user_position',
+  opponentPositionUpdate: 'opponent_position_update'
 } as const
 
 type MatchMessageTypesType = (typeof MatchMessageTypes)[keyof typeof MatchMessageTypes];
@@ -13,7 +13,7 @@ type MatchMessageTypesType = (typeof MatchMessageTypes)[keyof typeof MatchMessag
 interface MatchMessage {
   type: MatchMessageTypesType;
   token?: string;
-  [key: string]: any; // Allow additional properties
+  position?: number;
 }
 
 
@@ -33,7 +33,6 @@ export default function handleMatch(ws: WebSocket, url: URL) {
 
   let authenticated = false;
   let userId : number;
-  let hasAddedToMatch = false;
 
   const authTimeout = setTimeout(() => {
     if (!authenticated) {
@@ -66,8 +65,12 @@ export default function handleMatch(ws: WebSocket, url: URL) {
             throw new Error('Invalid matchId');
           }
 
+          matchStore.updateUserWebSocket(matchId, userId, ws)
+
           clearTimeout(authTimeout);
-          console.log('Client authenticated successfully for matchId:', matchId, 'userId:', userId);
+          console.log('Client authenticated successfully and has been added to the match for matchId:', matchId, 'userId:', userId);
+          
+          return;
         } else {
           throw new Error('First message must be authentication');
         }
@@ -79,26 +82,31 @@ export default function handleMatch(ws: WebSocket, url: URL) {
         throw new Error('Client is already authenticated');
       }
 
-      // After authentication, the first message must be add_user_to_match to add the user to the match
-      if (!hasAddedToMatch) {
-        if (msg.type === MatchMessageTypes.addUserToMatch) {
-          matchStore.updateUserWebSocket(matchId, userId, ws)
-          hasAddedToMatch = true;
-        } else {
-          throw new Error('First message after authentication must be add_user_to_match');
-        }
-      }
-
-      // If the user has already been added to the match, they should not be sending add_user_to_match messages again
-      if (hasAddedToMatch && msg.type === MatchMessageTypes.addUserToMatch) {
-        throw new Error('User has already been added to match');
-      }
-
-      // If the user is authenticated and has been added to the match, they can only send update_user_position messages
+      // Update user position and broadcast to opponent
       if (msg.type === MatchMessageTypes.updateUserPosition) {
-        if (!msg.position) {
+        if (!msg.position || isNaN(msg.position)) {
           throw new Error('update_user_position message missing position');
         }
+        
+        const usersInfo = matchStore.getUsersInMatchExceptUser(matchId, userId);
+
+        // Broadcast the user's new position to the other user in the match
+        usersInfo.forEach(userInfo => {
+          if (userInfo.ws && userInfo.ws.readyState === WebSocket.OPEN) {
+            userInfo.ws.send(JSON.stringify({ type: 'opponent_position_update', userId, position: msg.position }));
+          }
+        });
+
+      }
+
+      // Broadcast opponent position update to the user
+      if (msg.type === MatchMessageTypes.opponentPositionUpdate) {
+        if (!msg.position || isNaN(msg.position)) {
+          throw new Error('opponent_position_update message missing position');
+        }
+
+        ws.send(JSON.stringify({ type: 'opponent_position_update', userId, position: msg.position }));
+
       }
 
     }
@@ -106,8 +114,22 @@ export default function handleMatch(ws: WebSocket, url: URL) {
       clearTimeout(authTimeout);
       const errorMessage = error instanceof Error ? error.message : 'Internal server error';
       console.error('Error processing message for matchId:', matchId, 'Error:', errorMessage);
-      ws.close(1011, errorMessage);
+      ws.send(JSON.stringify({ type: 'error', message: errorMessage }));
+      ws.close(1011);
       return;
+    }
+
+  });
+
+  ws.on('close', () => {
+    try {
+      if (authenticated) {
+        matchStore.deleteMatch(matchId);
+        console.log('Client disconnected and match deleted for matchId:', matchId, 'userId:', userId);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      console.error('Error occurred while handling client close for matchId:', matchId, 'Error:', errorMessage);
     }
 
   });

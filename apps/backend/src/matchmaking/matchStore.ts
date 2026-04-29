@@ -1,10 +1,19 @@
 import WebSocket from 'ws';
 
+const MatchStatus = {
+  waitingForPlayers: 'waiting_for_players',
+  inProgress: 'in_progress',
+  completed: 'completed'
+} as const;
+
+type MatchStatusType = (typeof MatchStatus)[keyof typeof MatchStatus];
 
 interface MatchUsersInfo {
   userId: number;
   ws: WebSocket;
+  status: MatchStatusType;
 }
+
 
 
 class MatchStore {
@@ -17,13 +26,19 @@ class MatchStore {
   }
 
   createMatch(matchId: string, isRandom: boolean) {
-    if (this.matches.has(matchId)) {
-      console.log('Attempted to create a match that already exists:', matchId);
-      return;
-    }
+    try {
+      if (this.matches.has(matchId)) {
+        console.log('Attempted to create a match that already exists:', matchId);
+        return;
+      }
+  
+      this.matches.set(matchId, []);
+      this.isRandomMatch = isRandom;
 
-    this.matches.set(matchId, []);
-    this.isRandomMatch = isRandom;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
+    }
   }
   
   isValidMatch(matchId: string, userId: number): boolean {
@@ -41,55 +56,80 @@ class MatchStore {
   }
 
   addUserToMatch(matchId: string, userId: number, ws: WebSocket) {
-    if (!this.matches.has(matchId)) {
-      console.log('Attempted to add user to non-existent match:', matchId);
-      ws.close(1008, 'Match does not exist');
-      return;
+    try {
+      if (!this.matches.has(matchId)) {
+        console.log('Attempted to add user to non-existent match:', matchId);
+        ws.close(1008, 'Match does not exist');
+        return;
+      }
+  
+      if (this.isRandomMatch && this.matches.get(matchId)!.length >= 2) {
+        console.log('Attempted to add user to a full random match:', matchId);
+        ws.close(1008, 'Match is full');
+        return;
+      }
+      this.matches.get(matchId)?.push({ userId, ws, status: MatchStatus.waitingForPlayers });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
     }
-
-    if (this.isRandomMatch && this.matches.get(matchId)!.length >= 2) {
-      console.log('Attempted to add user to a full random match:', matchId);
-      ws.close(1008, 'Match is full');
-      return;
-    }
-    this.matches.get(matchId)?.push({ userId, ws });
   }
 
   getUsersInMatchExceptUser(matchId: string, userId: number): MatchUsersInfo[] {
-    if (!this.matches.has(matchId)) {
-      console.log('Attempted to get users from non-existent match:', matchId);
+    try {
+      if (!this.matches.has(matchId)) {
+        console.log('Attempted to get users from non-existent match:', matchId);
+        return [];
+      }
+  
+      const usersInfo = this.matches.get(matchId)!.filter(userInfo => userInfo.userId !== userId);
+  
+      return usersInfo;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      console.error('Error getting users in match for matchId:', matchId, 'userId:', userId, 'Error:', errorMessage);
       return [];
     }
-
-    const usersInfo = this.matches.get(matchId)!.filter(userInfo => userInfo.userId !== userId);
-
-    return usersInfo;
   }
 
   updateUserWebSocket(matchId: string, userId: number, ws: WebSocket) {
-    if (!this.isValidMatch(matchId, userId)) {
-      console.log('Attempted to update WebSocket for non-existent match:', matchId);
-      ws.close(1008, 'Match does not exist');
-      return;
+    try {
+      if (!this.isValidMatch(matchId, userId)) {
+        throw new Error('Invalid matchId or userId');
+      }
+  
+      const usersInfo = this.matches.get(matchId)!;
+      const userInfo = usersInfo.find(info => info.userId === userId);
+  
+      if(!userInfo) {
+        throw new Error('User not present in match');
+      }
+  
+      if (userInfo.ws) {
+        throw new Error('WebSocket already exists for user in match');
+      }
+  
+      userInfo.ws = ws;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
     }
 
-    const usersInfo = this.matches.get(matchId)!;
-    const userInfo = usersInfo.find(info => info.userId === userId);
+  }
 
-    if(!userInfo) {
-      console.log('Attempted to update WebSocket for user not in match:', userId, 'matchId:', matchId);
-      ws.close(1008, 'User not present in match');
-      return;
+  deleteMatch(matchId: string) {
+    try {
+      if (!this.matches.has(matchId)) {
+        console.log('Attempted to delete non-existent match:', matchId);
+        return;
+      }
+      this.matches.delete(matchId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
     }
-
-    if (userInfo.ws) {
-      console.log('Attempted to update WebSocket for user that already has a WebSocket in match:', userId, 'matchId:', matchId);
-      ws.close(1008, 'WebSocket already exists for user in match');
-      return;
-    }
-
-    userInfo.ws = ws;
-
   }
 
 }

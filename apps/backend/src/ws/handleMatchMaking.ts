@@ -46,7 +46,8 @@ export default function handleMatchMaking(ws: WebSocket, url: URL) {
       pool.join(userId, (match, matchId) => {
         clearTimeout(timeOut);
         console.log(`Match found for User ${userId}: User ${match[0]} vs User ${match[1]}`);
-        ws.close(1000, JSON.stringify({ type: 'match_found', users: match, matchId: matchId }));
+        ws.send(JSON.stringify({ type: 'match_found', users: match, matchId: matchId }));
+        ws.close(1000, 'Match found, closing connection');
       });
       console.log(`User ${userId} added to matchmaking pool`);
 
@@ -59,7 +60,7 @@ export default function handleMatchMaking(ws: WebSocket, url: URL) {
     }
     catch (error) {
       clearTimeout(validateUserTimeout);
-      console.error('Error handling matchmaking message:', error);
+      console.error('Error handling matchmaking message:', error instanceof Error ? error.message : error);
       ws.close(1011, JSON.stringify({ type: 'error', message: error instanceof Error ? error.message : 'Unknown error' }));
     }
 
