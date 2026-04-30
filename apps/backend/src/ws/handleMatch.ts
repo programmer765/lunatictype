@@ -99,7 +99,7 @@ export default function handleMatch(ws: WebSocket, url: URL) {
 
       }
 
-      // Broadcast opponent position update to the user
+      // update the user of the opponent's position change
       if (msg.type === MatchMessageTypes.opponentPositionUpdate) {
         if (!msg.position || isNaN(msg.position)) {
           throw new Error('opponent_position_update message missing position');
@@ -124,7 +124,7 @@ export default function handleMatch(ws: WebSocket, url: URL) {
   ws.on('close', () => {
     try {
       if (authenticated) {
-        matchStore.deleteMatch(matchId);
+        matchStore.handleDisconnect(matchId, userId);
         console.log('Client disconnected and match deleted for matchId:', matchId, 'userId:', userId);
       }
     } catch (error) {
