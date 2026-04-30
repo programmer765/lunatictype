@@ -8,7 +8,7 @@ import UserJWTPayload from "./userJWTPayload";
 import userDb from "../../db/user";
 
 interface GithubIdTokenPayload {
-    id: number;
+    id: string;
     email: string;
     name: string;
     login: string;
@@ -41,7 +41,7 @@ const github = router({
             const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
             
             if(decodedState.from !== "signup" && decodedState.from !== "login") {
-                return { success: false, message: 'Invalid state' };
+                throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid state' });
             }
 
             const { data } : { data: GithubTokenResponse } = await axios.post(github_token_uri, {
@@ -67,24 +67,25 @@ const github = router({
                     Authorization: `Bearer ${access_token}`,
                 },
             });
+            profile.id = String(profile.id)
+            const User = await userDb.findByGithubId(profile.id);
+
+            if(decodedState.from === "login" && User === null) {
+                throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found, please sign up first' });
+            }
 
             const user: UserJWTPayload = {
-                id: String(profile.id),
+                id: User ? User.id : -1,
                 email: profile.email,
                 name: profile.name,
                 username: profile.login,
                 picture: profile.avatar_url,
+                github_id: profile.id,
             };
-
-            const User = await userDb.findByGithubId(user.id);
-
-            if(decodedState.from === "login" && User === null) {
-                return { success: false, message: 'User not found' };
-            }
 
             if(decodedState.from === "signup") {
                 if(User !== null) {
-                    return { success: false, message: 'User already exists' };
+                    throw new TRPCError({ code: 'CONFLICT', message: 'User already exists, please log in instead' });
                 }
 
                 const userCreated = await userDb.createUser({
@@ -93,10 +94,10 @@ const github = router({
                     username: user.username,
                     picture: user.picture,
                     is_github_verified: true,
-                    github_id: user.id,
+                    github_id: user.github_id,
                 });
 
-                user.id = userCreated.id.toString()
+                user.id = userCreated.id
             }
 
             userDb.createCookie(ctx, user)
@@ -104,8 +105,10 @@ const github = router({
             return { success: true, message: "Authentication successful" };
 
         } catch (error: any) {
-            console.log("github token error", error.message)
-            return { success: false, message: error.message };
+            const errorMessage = error instanceof TRPCError ? error.message : 'An unexpected error occurred';
+            const errorCode = error instanceof TRPCError ? error.code : 'INTERNAL_SERVER_ERROR';
+            console.log(errorCode, errorMessage)
+            return { success: false, message: errorMessage };
         }
     })
 });

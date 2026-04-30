@@ -10,6 +10,9 @@ export function initWebSocketServer(server: Server) {
   wss.on('connection', (ws, req) => {
     const url = new URL(req.url!, `http://${req.headers.host}`);
     const pathName = url.pathname;
+    const cookie = req.headers.cookie;
+    console.log(cookie)
+    // const user = req.user
 
     if (pathName === '/ws/matchmaking') {
       handleMatchMaking(ws, url);

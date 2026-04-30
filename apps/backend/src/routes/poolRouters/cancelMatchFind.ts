@@ -7,7 +7,7 @@ const cancelMatchFind = protectedProcedure.query(({ ctx}) => {
     return { success: false, message: "User not authenticated" }
   }
   const userId = ctx.user.id;
-  pool.cancelUser(parseInt(userId));
+  pool.cancelUser(userId);
   console.log(`User ${userId} cancelled matchmaking`);
   return { success: true, message: "Matchmaking cancelled" }
 })

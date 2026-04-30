@@ -6,11 +6,12 @@ import { User } from '../prisma/generated/client';
 
 export default async function validateToken(token: string): Promise<number> {
   try {
-    const parsedUser = jwt.verify(token, jwt_secret) as { userId: number };
+    const parsedUser = jwt.verify(token, jwt_secret) as { id: number };
+    console.log(parsedUser)
     const requiredFields = { id: true };
-    const user : User | null = await userDb.findByUserId(parsedUser.userId);
+    const user : User | null = await userDb.findByUserId(parsedUser.id);
     if (!user) {
-      console.log('User not found for token validation, userId:', parsedUser.userId);
+      console.log('User not found for token validation, userId:', parsedUser.id);
       throw new Error('User not found');
     }
     return user.id;

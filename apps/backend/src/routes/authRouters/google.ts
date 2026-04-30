@@ -28,7 +28,7 @@ const google = router({
 
             const decodedState : StatePayload = JSON.parse(decodeURIComponent(state));
             if(decodedState.from !== "signup" && decodedState.from !== "login") {
-                return { success: false, message: 'Invalid state' };
+                throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid state' });
             }
 
             const { data } = await axios.post(google_token_uri, {
@@ -44,27 +44,28 @@ const google = router({
             const decoded = jwt.decode(id_token) as GoogleIdTokenPayload | null;
 
             if(decoded === null) {
-                return { success: false, message: "Invalid ID token" };
+                throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid ID token' });
             }
 
+            const User = await userDb.findByGoogleId(decoded.sub);
+
+            if(decodedState.from === "login" && User === null) {
+                throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found, please sign up first' });
+            }
             
             const user : UserJWTPayload = {
-                id: decoded.sub,
+                id: User ? User.id : -1,
                 email: decoded.email,
                 name: decoded.name,
                 username: decoded.given_name,
                 picture: decoded.picture,
+                google_id: decoded.sub,
             };
 
-            const User = await userDb.findByGoogleId(user.id);
-
-            if(decodedState.from === "login" && User === null) {
-                return { success: false, message: 'User not found' };
-            }
 
             if(decodedState.from === "signup") {
                 if(User !== null) {
-                    return { success: false, message: 'User already exists' };
+                    throw new TRPCError({ code: 'CONFLICT', message: 'User already exists, please log in instead' });
                 }
 
                 const userCreated = await userDb.createUser({
@@ -73,10 +74,10 @@ const google = router({
                     username: user.username,
                     picture: user.picture,
                     is_google_verified: true,
-                    google_id: user.id,
+                    google_id: user.google_id,
                 })
 
-                user.id = userCreated.id.toString()
+                user.id = userCreated.id
             }
 
             userDb.createCookie(ctx, user)
@@ -84,7 +85,9 @@ const google = router({
             return { success: true, message: "Authentication successful" }
         }
         catch(error: any) {
-            return { success: false, message: error.message };
+            const errorMessage = error instanceof TRPCError ? error.message : 'An unexpected error occurred';
+            console.log("google token error", errorMessage)
+            return { success: false, message: errorMessage };
         }
     }),
     link: publicProcedure.input(z.object({ redirect_url: z.string().url(), state: z.string() })).mutation(({ input }) => {

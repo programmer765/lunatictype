@@ -27,7 +27,7 @@ const signup = publicProcedure.input(z.object({
         });
         
         const user : UserJWTPayload = {
-            id: newUser.id.toString(),
+            id: newUser.id,
             username: newUser.username,
             email: newUser.email
         }

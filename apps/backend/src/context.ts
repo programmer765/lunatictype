@@ -1,11 +1,11 @@
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import jwt from 'jsonwebtoken';
+import { jwt_secret, userInfoTokenName } from './env';
 
-const jwt_secret = process.env.JWT_SECRET || ""
 
 
 interface UserContext {
-    id: string;
+    id: number;
     email: string;
     name: string;
     picture: string;
@@ -21,7 +21,7 @@ interface TRPCContext {
 
 
 const createContext = async ({ req, res} : CreateExpressContextOptions) => {
-    const userInfoToken = req.cookies['userInfoToken']
+    const userInfoToken = req.cookies[userInfoTokenName]
     let user : TRPCContext["user"] = null
     if(userInfoToken) {
         try {
