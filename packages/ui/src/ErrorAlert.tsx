@@ -11,11 +11,23 @@ import {
 import React from 'react'
 
 interface ErrorProps {
-  message: string
+  message: string,
+  home?: boolean,
+  refresh?: boolean
+}
+
+const handleClick = (home?: boolean, refresh?: boolean) => {
+  if(home) {
+    window.location.href = '/';
+  } else if(refresh) {
+    window.location.reload();
+  } else {
+    return
+  }
 }
 
 
-export const ErrorAlert: React.FC<ErrorProps> = ({ message }) => {
+export const ErrorAlert: React.FC<ErrorProps> = ({ message, home, refresh }) => {
   return (
     <>
       <AlertDialog open={true}>
@@ -27,7 +39,9 @@ export const ErrorAlert: React.FC<ErrorProps> = ({ message }) => {
             {message}
           </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[#272727] outline-none border border-[#272727]" onClick={() => {window.location.reload()}}>Close</AlertDialogCancel>
+            <AlertDialogCancel className="bg-[#272727] outline-none border border-[#272727]" onClick={() => handleClick(home, refresh)}>
+              { home ? "Go Home" : refresh ? "Refresh" : "Close" }
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -4,19 +4,15 @@ import { Navbar } from '../../Components/Navbar'
 import useUserStore from '../../store/userStore'
 import { useNavigate } from 'react-router-dom'
 import { ErrorAlert } from '@repo/ui'
-import { cn } from '../../../../../packages/ui/src/lib/utils'
+// import { cn } from '../../../../../packages/ui/src/lib/utils'
+import { ErrorCodes, WebSocketError } from '@repo/types';
+import { WebSocketMessage } from '@repo/types'
+import setWebSocketError from '../../utils/setWebSocketError';
+import generateWebSocketError from '../../utils/generateWebSocketError'
+import Loading from '../../Components/Loading'
+import { parseWebSocketErrorFromMsg } from '../../utils/parseWebSocketErrorFromMsg'
 
 const host : URL = import.meta.env.VITE_WS_URL || new URL('ws://localhost:3000');
-
-interface ErrorType {
-  isError: boolean,
-  message: string
-}
-
-interface MessageType {
-  type: string,
-  message: string
-}
 
 const container = {
   hidden: { opacity: 1, scale: 0 },
@@ -44,29 +40,37 @@ const item = {
   
 
 const PlayRandomLandingPage = () => {
-
-  const [isMatching, setIsMatching] = useState<boolean>(true);
+  // console.log(first)
+  const [isMatching, setIsMatching] = useState<boolean>(false);
+  const [firstLoad, setFirstLoad] = useState<boolean>(true);
   const user = useUserStore((state) => state.user);
   const userIsLoading = useUserStore((state) => state.userIsLoading);
-  const [error, setError] = useState<ErrorType>({ isError: false, message: "" });
+  const [error, setError] = useState<WebSocketError>({ isError: false, message: "", code: ErrorCodes.UNKOWN_ERROR, home: false, refresh: false });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
+
+
+
+
   useEffect(() => {
-    if(userIsLoading) return; // Wait until we know if the user is logged in or not
+    if(userIsLoading) {
+      setIsLoading(true);
+      return; // Wait until we know if the user is logged in or not
+    }
+    setIsLoading(false);
     if(user === null || user === undefined) {
       navigate('/v1/auth');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIsLoading])
-  
 
-  // useEffect(() => {
-  //   setTimeout(() => setIsMatching(false), 4000);
-  // }, []);
+
 
 
   useEffect(() => {
     if (!isMatching) return;
+    if (firstLoad) setFirstLoad(false);
     
     try {
       const matchmakingURL = new URL('/ws/matchmaking', host);
@@ -79,14 +83,19 @@ const PlayRandomLandingPage = () => {
       ws.onmessage = (message) => {
         try {
           const msgIn : string = message.data
-          const msg : MessageType = JSON.parse(msgIn)
-          console.log(msg.type)
-          if (msg.type === 'error') throw new Error(msg.message)
+          const msg : WebSocketMessage = JSON.parse(msgIn)
+
+          if (msg.isError) {
+            throw new Error(generateWebSocketError(msg.code, msg.message));
+          }
+          
+
+          
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Server error'
-          console.log('Failed to connect to WebSocket:', errorMessage);
           ws.close();
-          setError({ isError: true, message: errorMessage });
+          const genError: WebSocketError = parseWebSocketErrorFromMsg(error);
+          console.log('Failed to connect to WebSocket:', genError);
+          setWebSocketError({ setError, error: genError });
         } 
       }
 
@@ -104,15 +113,21 @@ const PlayRandomLandingPage = () => {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Server error';
       console.error('Failed to connect to WebSocket:', errorMessage);
-      setError({ isError: true, message: errorMessage });
+      const genError: WebSocketError = parseWebSocketErrorFromMsg(error);
+      setWebSocketError({ setError, error: genError });
     }
 
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMatching])
+
+
+
+  
 
   return (
     <motion.div className='h-screen flex bg-[#202020] flex-col text-white'>
-      {error.isError &&  <ErrorAlert message={error.message} />}
+      {isLoading && <Loading />}
+      {error.isError &&  <ErrorAlert message={error.message} home={error.home} refresh={error.refresh} />}
       <motion.div
         variants={container}
         initial="hidden"
@@ -125,11 +140,14 @@ const PlayRandomLandingPage = () => {
         </motion.div>
         <motion.div variants={item} className='flex flex-col items-center justify-center h-full'>
           <motion.h1 className='text-4xl font-bold'>
-            {isMatching ? "Finding you an opponent..." : "No opponents found. Please try again later."}
+            {
+              firstLoad ? "Click the button below to find a random opponent!" :
+              isMatching ? "Finding you an opponent..." : "No opponents found. Please try again later."
+            }
           </motion.h1>
           <motion.div>
-            <motion.button className={`${cn(isMatching ? 'bg-[#272727] text-red-700' : 'bg-[#efefef] text-black')} px-4 py-2 rounded-md mt-5 `} onClick={() => setIsMatching(!isMatching)}>
-              {isMatching ? "Stop Matching" : "Try Again"}
+            <motion.button className={`${isMatching ? 'bg-[#272727] text-red-700' : 'bg-[#efefef] text-black'} px-4 py-2 rounded-md mt-5 `} onClick={() => setIsMatching(!isMatching)}>
+              {isMatching ? "Stop Matching" : "Find Match"}
             </motion.button>
           </motion.div>
         </motion.div>
