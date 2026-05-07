@@ -15,6 +15,7 @@ const setWebSocketError = ({ setError, error }: setWebSocketErrorProps) => {
     error.message = "Received unknown error code from server";
   }
   const { code, message } = error;
+  console.log(code, message)
 
   if (code === ErrorCodes.MATCHMAKING_COOLDOWN || code === ErrorCodes.UNKOWN_ERROR) {
     setError({ isError: true, message, code, home: false, refresh: false });

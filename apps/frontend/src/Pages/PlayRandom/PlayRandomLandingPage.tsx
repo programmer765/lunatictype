@@ -76,9 +76,6 @@ const PlayRandomLandingPage = () => {
       const matchmakingURL = new URL('/ws/matchmaking', host);
       const ws = new WebSocket(matchmakingURL);
 
-      // ws.onopen = () => {
-      //   console.log('WebSocket connection established');
-      // }
       
       ws.onmessage = (message) => {
         try {
@@ -88,13 +85,16 @@ const PlayRandomLandingPage = () => {
           if (msg.isError) {
             throw new Error(generateWebSocketError(msg.code, msg.message));
           }
+
+
+          console.log('Received message from WebSocket:', msg);
           
 
           
         } catch (error) {
           ws.close();
           const genError: WebSocketError = parseWebSocketErrorFromMsg(error);
-          console.log('Failed to connect to WebSocket:', genError);
+          console.log('WebSocket error:', genError);
           setWebSocketError({ setError, error: genError });
         } 
       }
@@ -122,7 +122,7 @@ const PlayRandomLandingPage = () => {
 
 
 
-  
+
 
   return (
     <motion.div className='h-screen flex bg-[#202020] flex-col text-white'>
