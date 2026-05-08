@@ -1,9 +1,9 @@
-import { ErrorCodes, WebSocketError, WebSocketMessage } from "@repo/types";
+import { ErrorCodes, ErrorState, WebSocketMessage } from "@repo/types";
 
 
-export function parseWebSocketErrorFromMsg(error: unknown) : WebSocketError {
-  const genError : WebSocketError = { 
-    isError: true, 
+export function parseWebSocketErrorFromMsg(error: unknown) : ErrorState {
+  const genError : ErrorState = { 
+    showAlert: true, 
     message: "", 
     code: ErrorCodes.UNKOWN_ERROR, 
     home: false, 

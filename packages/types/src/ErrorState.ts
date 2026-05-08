@@ -1,9 +1,9 @@
-import { ErrorCodes } from "./ErrorCodes";
+import { ErrorCodes } from "./Codes";
 
 export type ErrorCodesType = typeof ErrorCodes[keyof typeof ErrorCodes];
 
-interface WebSocketError {
-  isError: boolean,
+interface ErrorState {
+  showAlert: boolean;
   message: string,
   code: ErrorCodesType,
   home: boolean,
@@ -11,4 +11,4 @@ interface WebSocketError {
 }
 
 
-export type { WebSocketError };
+export type { ErrorState };

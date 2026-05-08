@@ -1,3 +1,3 @@
-export * from './WebSocketError';
+export * from './ErrorState';
 export * from './WebSocketMessage'
-export * from './ErrorCodes'
+export * from './Codes'

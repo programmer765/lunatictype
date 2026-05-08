@@ -1,9 +1,9 @@
 import { ErrorCodes } from "@repo/types"
-import { WebSocketError } from "@repo/types";
+import { ErrorState } from "@repo/types";
 
 interface setWebSocketErrorProps {
-  setError: React.Dispatch<React.SetStateAction<WebSocketError>>,
-  error: WebSocketError
+  setError: React.Dispatch<React.SetStateAction<ErrorState>>,
+  error: ErrorState
 }
 
 
@@ -18,11 +18,11 @@ const setWebSocketError = ({ setError, error }: setWebSocketErrorProps) => {
   console.log(code, message)
 
   if (code === ErrorCodes.MATCHMAKING_COOLDOWN || code === ErrorCodes.UNKOWN_ERROR) {
-    setError({ isError: true, message, code, home: false, refresh: false });
+    setError({ showAlert: true, message, code, home: false, refresh: false });
   } else if (code === ErrorCodes.UNAUTHORIZED || code === ErrorCodes.AUTH_TIMEOUT) {
-    setError({ isError: true, message, code, home: true, refresh: false });
+    setError({ showAlert: true, message, code, home: true, refresh: false });
   } else {
-    setError({ isError: true, message, code, home: false, refresh: true });
+    setError({ showAlert: true, message, code, home: false, refresh: true });
   }
 }
 

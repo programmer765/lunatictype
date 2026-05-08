@@ -1,5 +1,6 @@
 import matchStore from "./matchStore";
 import chalk from "chalk";
+import { Codes, CodesType } from "@repo/types"
 
 type MatchCallback = (match: [number, number], matchId: string) => void;
 
@@ -29,13 +30,13 @@ class Pool {
     this.timeOfLastCallToFindMatch.set(userId, timeoutId);
   }
 
-  join(userId: number, callback: MatchCallback): boolean {
+  join(userId: number, callback: MatchCallback): CodesType {
     if (this.activeUsers.has(userId)) {
-      return false;
+      return Codes.IN_MATCHMAKING;
     }
 
     if (!this.timeOfLastCallToFindMatch.has(userId)) {
-      return false;
+      return Codes.MATCHMAKING_COOLDOWN;
     }
 
     this.setTimeOfCall(userId);
@@ -43,7 +44,7 @@ class Pool {
     this.pool.push(userId);
     this.findMatchCallback.set(userId, callback);
     this.findMatch();
-    return true;
+    return Codes.SUCCESS;
   }
 
   cancelUser(userId: number) {

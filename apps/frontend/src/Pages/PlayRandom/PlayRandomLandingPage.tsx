@@ -1,16 +1,17 @@
 import { motion } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
 import { Navbar } from '../../Components/Navbar'
-import useUserStore from '../../store/userStore'
-import { useNavigate } from 'react-router-dom'
+// import useUserStore from '../../store/userStore'
+// import { useNavigate } from 'react-router-dom'
 import { ErrorAlert } from '@repo/ui'
 // import { cn } from '../../../../../packages/ui/src/lib/utils'
-import { ErrorCodes, WebSocketError } from '@repo/types';
+import { ErrorCodes, ErrorState } from '@repo/types';
 import { WebSocketMessage } from '@repo/types'
 import setWebSocketError from '../../utils/setWebSocketError';
 import generateWebSocketError from '../../utils/generateWebSocketError'
 import Loading from '../../Components/Loading'
 import { parseWebSocketErrorFromMsg } from '../../utils/parseWebSocketErrorFromMsg'
+import { useIsLoggedIn } from '../../server/router/getDataFromServer'
 
 const host : URL = import.meta.env.VITE_WS_URL || new URL('ws://localhost:3000');
 
@@ -43,27 +44,35 @@ const PlayRandomLandingPage = () => {
   // console.log(first)
   const [isMatching, setIsMatching] = useState<boolean>(false);
   const [firstLoad, setFirstLoad] = useState<boolean>(true);
-  const user = useUserStore((state) => state.user);
-  const userIsLoading = useUserStore((state) => state.userIsLoading);
-  const [error, setError] = useState<WebSocketError>({ isError: false, message: "", code: ErrorCodes.UNKOWN_ERROR, home: false, refresh: false });
+  // const user = useUserStore((state) => state.user);
+  // const userIsLoading = useUserStore((state) => state.userIsLoading);
+  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKOWN_ERROR, home: false, refresh: false });
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const navigate = useNavigate();
-
-
-
+  const isLoggedIn = useIsLoggedIn();
 
 
   useEffect(() => {
-    if(userIsLoading) {
+
+    if(isLoggedIn.isLoading) {
       setIsLoading(true);
-      return; // Wait until we know if the user is logged in or not
+      return;
     }
+
     setIsLoading(false);
-    if(user === null || user === undefined) {
-      navigate('/v1/auth');
+
+    if (isLoggedIn.error || isLoggedIn.data === null || isLoggedIn.data === undefined) {
+      setError({ showAlert: true, code: ErrorCodes.SERVER_ERROR, message: "Failed to check login status", home: false, refresh: true });
+      return;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userIsLoading])
+
+    if (isLoggedIn.data.success === false || isLoggedIn.data.user === null || isLoggedIn.data.user === undefined) {
+      setError({ showAlert: true, code: ErrorCodes.UNAUTHORIZED, message: "You are not logged in", home: true, refresh: false });
+      return;
+    }
+    
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn.isLoading])
 
 
 
@@ -93,7 +102,7 @@ const PlayRandomLandingPage = () => {
           
         } catch (error) {
           ws.close();
-          const genError: WebSocketError = parseWebSocketErrorFromMsg(error);
+          const genError: ErrorState = parseWebSocketErrorFromMsg(error);
           console.log('WebSocket error:', genError);
           setWebSocketError({ setError, error: genError });
         } 
@@ -113,7 +122,7 @@ const PlayRandomLandingPage = () => {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Server error';
       console.error('Failed to connect to WebSocket:', errorMessage);
-      const genError: WebSocketError = parseWebSocketErrorFromMsg(error);
+      const genError: ErrorState = parseWebSocketErrorFromMsg(error);
       setWebSocketError({ setError, error: genError });
     }
 
@@ -121,13 +130,20 @@ const PlayRandomLandingPage = () => {
   }, [isMatching])
 
 
+  if (error.showAlert) {
+    return (
+      <ErrorAlert message={error.message} home={error.home} refresh={error.refresh} setError={setError} />
+    )
+  }
 
+
+  if (isLoading) {
+    return <Loading />
+  }
 
 
   return (
     <motion.div className='h-screen flex bg-[#202020] flex-col text-white'>
-      {isLoading && <Loading />}
-      {error.isError &&  <ErrorAlert message={error.message} home={error.home} refresh={error.refresh} />}
       <motion.div
         variants={container}
         initial="hidden"

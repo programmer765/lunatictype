@@ -8,26 +8,31 @@ import {
   AlertDialogTitle,
 } from "./components/ui/alert-dialog"
 
-import React from 'react'
+import { ErrorState } from "@repo/types"
+
+import React, { useEffect, useState } from 'react'
 
 interface ErrorProps {
   message: string,
   home?: boolean,
   refresh?: boolean
+  setError: React.Dispatch<React.SetStateAction<ErrorState>>
 }
 
-const handleClick = (home?: boolean, refresh?: boolean) => {
+const handleClick = (setError: React.Dispatch<React.SetStateAction<ErrorState>>, home?: boolean, refresh?: boolean) => {
+  setError(prev => ({ ...prev, showAlert: false }));
   if(home) {
     window.location.href = '/';
   } else if(refresh) {
     window.location.reload();
-  } else {
-    return
   }
 }
 
 
-export const ErrorAlert: React.FC<ErrorProps> = ({ message, home, refresh }) => {
+export const ErrorAlert: React.FC<ErrorProps> = ({ message, home, refresh, setError }) => {
+
+  // const [isOpen, setIsOpen] = useState(true);
+
   return (
     <>
       <AlertDialog open={true}>
@@ -39,7 +44,7 @@ export const ErrorAlert: React.FC<ErrorProps> = ({ message, home, refresh }) => 
             {message}
           </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[#272727] outline-none border border-[#272727]" onClick={() => handleClick(home, refresh)}>
+            <AlertDialogCancel className="bg-[#272727] outline-none border border-[#272727]" onClick={() => handleClick(setError, home, refresh)}>
               { home ? "Go Home" : refresh ? "Refresh" : "Close" }
             </AlertDialogCancel>
           </AlertDialogFooter>

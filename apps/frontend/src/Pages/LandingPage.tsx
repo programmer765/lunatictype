@@ -9,12 +9,13 @@ import PlayOnline from "./PlayOnline";
 import { ErrorAlert } from "@repo/ui";
 import useHomeStore from "../store/homeStore";
 import useUserStore from "../store/userStore";
+import { ErrorState, ErrorCodes } from "@repo/types";
 
 const LandingPage : React.FC = () => {
 
   const [isPractice, setIsPractice] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKOWN_ERROR, home: false, refresh: false });
   const setIsHome = useHomeStore((state) => state.setIsHome);
   const isHome = useHomeStore((state) => state.isHome);
   const user = useUserStore((state) => state.user);
@@ -46,7 +47,8 @@ const LandingPage : React.FC = () => {
 
   const updatePlayType = (practice: boolean, online: boolean) => {
     if(practice === false && online === true && (user === null || user === undefined)) {
-      setIsError(true);
+      setError({ showAlert: true, message: "Please log in to play online.", code: ErrorCodes.UNAUTHORIZED, home: false, refresh: false });
+      return;
     }
     setIsPractice(practice)
     setIsOnline(online)
@@ -63,9 +65,17 @@ const LandingPage : React.FC = () => {
     setIsOnline(false);
   }, [isHome])
 
+
+  if (error.showAlert) {
+    return (
+      <ErrorAlert message={error.message} home={error.home} refresh={error.refresh} setError={setError} />
+    )
+  }
+
+
+
   return (
     <motion.div>
-      { isError && <ErrorAlert message="Please log in to play online." /> }
       <motion.div className='h-screen bg-[#202020] flex flex-col'>
         <motion.div variants={container} initial="hidden" animate="visible" transition={{ ease: "easeIn", duration: 2 }} className="flex flex-col h-full">
           <motion.div className='' variants={item}>

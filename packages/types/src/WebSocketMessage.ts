@@ -1,4 +1,4 @@
-import { ErrorCodes } from "./ErrorCodes";
+import { ErrorCodes } from "./Codes";
 
 export type WebSocketMessageCodeType = typeof ErrorCodes[keyof typeof ErrorCodes];
 

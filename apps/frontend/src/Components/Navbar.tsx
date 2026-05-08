@@ -17,7 +17,7 @@ export const Navbar : React.FC = () => {
 	const setIsHome = useHomeStore((state) => state.setIsHome);
 	const isHome = useHomeStore((state) => state.isHome);
 	const user = useUserStore((state) => state.user);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
   const isLoggedIn = useIsLoggedIn();
   const setUser = useUserStore((state) => state.setUser);
 	const setUserIsLoading = useUserStore((state) => state.setUserIsLoading);
@@ -29,25 +29,52 @@ export const Navbar : React.FC = () => {
 	}
 
 	useEffect(() => {
-		setIsLoading(true);
-		setUserIsLoading(true);
-		const checkLoggedIn = () => {
-			if(isLoggedIn.data?.user !== null && isLoggedIn.data?.user !== undefined) {
-				setUser(isLoggedIn.data?.user)
-				setUserIsLoading(false);
-			}
-			if(isLoggedIn.error) {
-				console.log(isLoggedIn.error.message)
-			}
-			setIsLoading(false);
-		};
-		checkLoggedIn();
+		// setIsLoading(true);
+		// setUserIsLoading(true);
+		// const checkLoggedIn = () => {
+		// 	if(isLoggedIn.data?.user !== null && isLoggedIn.data?.user !== undefined) {
+		// 		setUser(isLoggedIn.data?.user)
+		// 		setUserIsLoading(false);
+		// 	}
+		// 	if(isLoggedIn.error) {
+		// 		console.log(isLoggedIn.error.message)
+		// 	}
+		// 	setIsLoading(false);
+		// };
+		// checkLoggedIn();
+
+		if(isLoggedIn.isLoading) {
+			setIsLoading(true);
+			setUserIsLoading(true);
+			return;
+		}
+
+		setIsLoading(false);
+		setUserIsLoading(false);
+
+		if (
+			!isLoggedIn.error && 
+			isLoggedIn.data !== null && 
+			isLoggedIn.data !== undefined && 
+			isLoggedIn.data.success === true && 
+			isLoggedIn.data.user !== null && 
+			isLoggedIn.data.user !== undefined
+			) {
+			setUser(isLoggedIn.data.user);
+		}
+
+
+
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isLoggedIn.isLoading]);
 
+
+	if(isLoading) {
+		return <Loading />
+	}
+
 	return (
 		<div className="py-5 text-white px-5">
-			{ isLoading && <Loading /> }
 			<div className="flex justify-between">
 				<div className="flex items-center">
 					<div className="md:text-5xl text-1xl font-semibold font-mono text-[#d4dce4] hover:cursor-pointer" onClick={handleHomeBtnClick}>
