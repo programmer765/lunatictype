@@ -33,7 +33,7 @@ export default async function handleMatchMaking(ws: WebSocket, url: URL, req: In
     const timeOut = setTimeout(() => {
       console.log(`Matchmaking timed out for User ${userId}`);
       pool.cancelUser(userId);
-      ws.send(generateSocketMessage(Codes.MATCHMAKING_COOLDOWN));
+      ws.send(generateSocketMessage(Codes.MATCHMAKING_NOT_FOUND));
       ws.close(1000);
     }, 30000);
 

@@ -54,43 +54,55 @@ class Pool {
     }
     this.activeUsers.delete(userId);
     this.cancelledUsers.set(userId, (this.cancelledUsers.get(userId) ?? 0) + 1);
+    this.findMatchCallback.delete(userId);
     console.log(chalk.blue(`Cancelled count for user ${userId}: ${this.cancelledUsers.get(userId)}\n`))
+  }
+
+  private getValidUserId(): number | null {
+    while (this.pool.length > 0) {
+
+      const userId = this.pool.shift()!;
+      let cancelledCount1 = this.cancelledUsers.get(userId) ?? 0;
+      console.log(chalk.blue(`userId: ${userId}, cancelledCount1: ${cancelledCount1}\n`));
+      
+      if (cancelledCount1 === 0) {
+        return userId;
+      }
+      
+      // Decrement the cancelled count for the first user if they have cancelled
+      --cancelledCount1;
+      if (cancelledCount1 === 0) {
+        this.cancelledUsers.delete(userId);
+      } else {
+        this.cancelledUsers.set(userId, cancelledCount1);
+      }
+    }
+    return null;
   }
 
   private findMatch() {
     while (this.pool.length >= 2) {
-      const userId1 = this.pool.shift()!;
-      const userId2 = this.pool.shift()!;
-      console.log(chalk.yellow(`At start of pool:\nuserId1: ${userId1}, userId2: ${userId2}, pool: ${this.pool}`));
+      
+      const userId1 = this.getValidUserId();
 
-      // Decrement the cancelled count for the first user if they have cancelled
-      let cancelledCount1 = this.cancelledUsers.get(userId1) ?? 0;
-      if (cancelledCount1) {
-        --cancelledCount1;
-        this.cancelledUsers.set(userId1, cancelledCount1);
-        if (cancelledCount1 === 0) {
-          this.findMatchCallback.delete(userId1);
-          this.cancelledUsers.delete(userId1);
-        }
+      if (userId1 === null) {
+        return;
       }
-
-      console.log(chalk.blueBright(`CancelledCount1: ${cancelledCount1} for userId1: ${userId1}\n`))
-
+      
+      
       // Decrement the cancelled count for the second user if they have cancelled
-      let cancelledCount2 = this.cancelledUsers.get(userId2) ?? 0;
-      if (cancelledCount2) {
-        --cancelledCount2;
-        this.cancelledUsers.set(userId2, cancelledCount2);
-        if (cancelledCount2 === 0) {
-          this.findMatchCallback.delete(userId2);
-          this.cancelledUsers.delete(userId2);
-        }
+      const userId2 = this.getValidUserId();
+
+      if (userId2 === null) {
+        // If the second user is null, add the first user back to the pool and return
+        this.pool.unshift(userId1);
+        return;
       }
 
-      console.log(chalk.blueBright(`CancelledCount2: ${cancelledCount2} for userId2: ${userId2}\n`))
+      console.log(chalk.yellow(`UserId1: ${userId1}, UserId2: ${userId2}`))
 
-      // If both the user has the cancelled of zero, they are not the same user and they are active, create a match
-      if (cancelledCount1 === 0 && cancelledCount2 === 0 && userId1 !== userId2 && this.activeUsers.has(userId1) && this.activeUsers.has(userId2)) {
+      // If both the user are not the same user and they are active, create a match
+      if (userId1 !== userId2 && this.activeUsers.has(userId1) && this.activeUsers.has(userId2)) {
 
         this.activeUsers.delete(userId1);
         this.activeUsers.delete(userId2);
@@ -116,21 +128,8 @@ class Pool {
         return;
       }
       
-      // if either user has a cancelled count greater than zero, add them back to the pool
-      if (cancelledCount1 > 0) {
-        this.pool.unshift(userId1);
-      }
 
-      if (cancelledCount2 > 0) {
-        this.pool.unshift(userId2);
-      }
-
-      // If both users are the same, remove the first user from the pool
-      if (userId1 === userId2) {
-        this.pool.shift();
-      }
-
-      console.log(chalk.yellow(`\nAt end of pool:\nuserId1: ${userId1}, userId2: ${userId2}, pool: ${this.pool}\n`))
+      console.log(chalk.yellow(`\nAt end of findMatch:\nuserId1: ${userId1}, userId2: ${userId2}, pool: ${this.pool}\n`))
 
       
     }

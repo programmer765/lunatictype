@@ -1,4 +1,5 @@
 import { Codes, CodesType, ErrorCodes } from "@repo/types";
+import chalk from "chalk";
 
 const CodesMsg: Record<string, string> = {
   [Codes.UNAUTHORIZED]: 'Please sign in to access matchmaking',
@@ -9,6 +10,7 @@ const CodesMsg: Record<string, string> = {
   [Codes.IN_MATCHMAKING]: 'You are already in matchmaking',
   [Codes.MATCH_FOUND]: 'A match has been found',
   [Codes.SUCCESS]: 'Success',
+  [Codes.MATCHMAKING_NOT_FOUND]: 'No match found within the time limit, please try again',
 }
 
 type ErrorCodesType = (typeof ErrorCodes)[keyof typeof ErrorCodes]
