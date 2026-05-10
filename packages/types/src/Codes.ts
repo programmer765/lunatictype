@@ -2,7 +2,7 @@ const ErrorCodes = {
   UNAUTHORIZED: "UNAUTHORIZED",
   AUTH_TIMEOUT: "AUTH_TIMEOUT",
   MATCHMAKING_COOLDOWN: "MATCHMAKING_COOLDOWN",
-  UNKOWN_ERROR: "UNKOWN_ERROR",
+  UNKNOWN_ERROR: "UNKNOWN_ERROR",
   IN_MATCHMAKING: "IN_MATCHMAKING",
   INVALID_MESSAGE: "INVALID_MESSAGE",
   SERVER_ERROR: "SERVER_ERROR",
@@ -20,6 +20,8 @@ const Codes = {
 
 
 export type CodesType = (typeof Codes)[keyof typeof Codes]
+export type ErrorCodesType = (typeof ErrorCodes)[keyof typeof ErrorCodes]
+export type SuccessCodesType = (typeof SuccessCodes)[keyof typeof SuccessCodes]
 
 export { ErrorCodes }
 export { SuccessCodes }

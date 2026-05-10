@@ -4,7 +4,7 @@ const CodesMsg: Record<string, string> = {
   [Codes.UNAUTHORIZED]: 'Please sign in to access matchmaking',
   [Codes.AUTH_TIMEOUT]: 'Authentication timeout. Please try joining matchmaking again',
   [Codes.MATCHMAKING_COOLDOWN]: 'Please wait a few seconds before trying to join matchmaking again',
-  [Codes.UNKOWN_ERROR]: 'An unknown error occurred',
+  [Codes.UNKNOWN_ERROR]: 'An unknown error occurred',
   [Codes.INVALID_MESSAGE]: 'Invalid message received during matchmaking',
   [Codes.IN_MATCHMAKING]: 'You are already in matchmaking',
   [Codes.MATCH_FOUND]: 'A match has been found',

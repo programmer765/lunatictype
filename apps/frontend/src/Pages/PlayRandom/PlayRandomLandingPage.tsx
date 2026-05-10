@@ -8,7 +8,6 @@ import { ErrorAlert } from '@repo/ui'
 import { ErrorCodes, ErrorState } from '@repo/types';
 import { WebSocketMessage } from '@repo/types'
 import setWebSocketError from '../../utils/setWebSocketError';
-import generateWebSocketError from '../../utils/generateWebSocketError'
 import Loading from '../../Components/Loading'
 import { parseWebSocketErrorFromMsg } from '../../utils/parseWebSocketErrorFromMsg'
 import { useIsLoggedIn } from '../../server/router/getDataFromServer'
@@ -92,7 +91,7 @@ const PlayRandomLandingPage = () => {
           const msg : WebSocketMessage = JSON.parse(msgIn)
 
           if (msg.isError) {
-            throw new Error(generateWebSocketError(msg.code, msg.message));
+            throw new Error(msgIn);
           }
 
 

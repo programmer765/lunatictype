@@ -14,6 +14,11 @@ export function parseWebSocketErrorFromMsg(error: unknown) : ErrorState {
     try {
       const msg = error.message;
       const errorMsg = JSON.parse(msg) as WebSocketMessage;
+
+      if (!errorMsg.isError) {
+        throw new Error("Received success message when error was expected");
+      }
+
       const isValidCode = Object.values(ErrorCodes).includes(errorMsg.code);
       if (!isValidCode) {
         throw new Error("Invalid error code received from server");

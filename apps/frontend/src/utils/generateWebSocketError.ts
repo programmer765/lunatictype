@@ -1,9 +1,9 @@
-import { ErrorState, WebSocketMessageCodeType } from "@repo/types";
+import { ErrorState, ErrorCodesType } from "@repo/types";
 import { ErrorCodes } from "@repo/types"
 
 
-const generateWebSocketErrorMsg = (code: WebSocketMessageCodeType, message: string) : string => {
-  const codes = Object.values(ErrorCodes) as WebSocketMessageCodeType[];
+const generateWebSocketErrorMsg = (code: ErrorCodesType, message: string) : string => {
+  const codes = Object.values(ErrorCodes) as ErrorCodesType[];
   const validateCode = codes.includes(code);
   const errorMsg : ErrorState = {
     showAlert: true,

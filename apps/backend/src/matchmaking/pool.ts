@@ -23,7 +23,8 @@ class Pool {
 
   private setTimeOfCall(userId: number) {
     const timeFact = Math.floor(Math.random() * 4) + 2;
-    const time = Date.now() + (timeFact * 1000);
+    console.log(chalk.blue(`Added cooldown for userId: ${userId} of ${timeFact}secs`))
+    const time = (timeFact * 1000);
     const timeoutId = setTimeout(() => {
       this.timeOfLastCallToFindMatch.delete(userId);
     }, time);
@@ -35,7 +36,7 @@ class Pool {
       return Codes.IN_MATCHMAKING;
     }
 
-    if (!this.timeOfLastCallToFindMatch.has(userId)) {
+    if (this.timeOfLastCallToFindMatch.has(userId)) {
       return Codes.MATCHMAKING_COOLDOWN;
     }
 

@@ -1,11 +1,14 @@
-import { ErrorCodes } from "./Codes";
+import { ErrorCodes, SuccessCodes, ErrorCodesType, SuccessCodesType } from "./Codes";
 
-export type WebSocketMessageCodeType = typeof ErrorCodes[keyof typeof ErrorCodes];
 
-interface WebSocketMessage {
-  code: WebSocketMessageCodeType,
+type WebSocketMessage = {
+  code: ErrorCodesType,
   message: string,
-  isError?: boolean
+  isError: true,
+} | {
+  code: SuccessCodesType,
+  payload: Record<string, unknown>,
+  isError: false,
 }
 
 

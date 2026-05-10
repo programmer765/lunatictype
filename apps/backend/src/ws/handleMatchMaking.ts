@@ -65,7 +65,7 @@ export default async function handleMatchMaking(ws: WebSocket, url: URL, req: In
     });
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : generateSocketMessage(Codes.UNKOWN_ERROR);
+    const errorMessage = error instanceof Error ? error.message : generateSocketMessage(Codes.UNKNOWN_ERROR);
     console.error('Error in matchmaking connection:\n', JSON.parse(errorMessage));
     ws.send(errorMessage);
     ws.close(1011);

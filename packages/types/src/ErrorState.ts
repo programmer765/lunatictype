@@ -1,6 +1,5 @@
-import { ErrorCodes } from "./Codes";
+import { ErrorCodes, ErrorCodesType } from "./Codes";
 
-export type ErrorCodesType = typeof ErrorCodes[keyof typeof ErrorCodes];
 
 interface ErrorState {
   showAlert: boolean;
