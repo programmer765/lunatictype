@@ -16,6 +16,7 @@ const SuccessCodes = {
 const Codes = {
   ...ErrorCodes,
   ...SuccessCodes,
+  MATCHMAKING_NOT_FOUND: "MATCHMAKING_NOT_FOUND",
 } as const
 
 
