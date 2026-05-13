@@ -54,9 +54,14 @@ const AuthPage : React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn.isLoading]);
 
+
+  if (isLoading) {
+    return <Loading />
+  }
+
+
   return (
     <motion.div>
-      {isLoading && <Loading />}
       <motion.div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#141220] to-[#000000]">
         <div className='w-full px-[1%] py-12 h-screen flex items-center justify-center'>
           <div className='w-[35%] lg:w-[30%] flex flex-col bg-black h-full text-white rounded-l-lg shadow-lg'>

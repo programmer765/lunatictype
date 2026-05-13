@@ -58,8 +58,9 @@ export default function handleMatch(ws: WebSocket, url: URL) {
           if (!msg.token) {
             throw new Error('Authentication message missing token');
           }
-          userId = await validateToken(msg.token)
+          const userInfo = await validateToken(msg.token)
           authenticated = true;
+          userId = userInfo.playerId;
 
           if (!matchStore.isValidMatch(matchId, userId)) {
             throw new Error('Invalid matchId');

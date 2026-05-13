@@ -11,19 +11,18 @@ const ErrorCodes = {
 const SuccessCodes = {
   SUCCESS: "SUCCESS",
   MATCH_FOUND: "MATCH_FOUND",
+  MATCHMAKING_NOT_FOUND: "MATCHMAKING_NOT_FOUND",
 } as const
 
 const Codes = {
   ...ErrorCodes,
   ...SuccessCodes,
-  MATCHMAKING_NOT_FOUND: "MATCHMAKING_NOT_FOUND",
 } as const
 
 
-export type CodesType = (typeof Codes)[keyof typeof Codes]
-export type ErrorCodesType = (typeof ErrorCodes)[keyof typeof ErrorCodes]
-export type SuccessCodesType = (typeof SuccessCodes)[keyof typeof SuccessCodes]
+type CodesType = (typeof Codes)[keyof typeof Codes]
+type ErrorCodesType = (typeof ErrorCodes)[keyof typeof ErrorCodes]
+type SuccessCodesType = (typeof SuccessCodes)[keyof typeof SuccessCodes]
 
-export { ErrorCodes }
-export { SuccessCodes }
-export { Codes }
+export type { CodesType, ErrorCodesType, SuccessCodesType }
+export { ErrorCodes, SuccessCodes, Codes }

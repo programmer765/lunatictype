@@ -5,7 +5,7 @@ export function parseWebSocketErrorFromMsg(error: unknown) : ErrorState {
   const genError : ErrorState = { 
     showAlert: true, 
     message: "", 
-    code: ErrorCodes.UNKOWN_ERROR, 
+    code: ErrorCodes.UNKNOWN_ERROR, 
     home: false, 
     refresh: false 
   };
@@ -27,7 +27,7 @@ export function parseWebSocketErrorFromMsg(error: unknown) : ErrorState {
       genError.message = errorMsg.message;
 
     } catch (parseError) {
-      genError.code = ErrorCodes.UNKOWN_ERROR;
+      genError.code = ErrorCodes.UNKNOWN_ERROR;
       genError.message = parseError instanceof Error ? parseError.message : "Wrong error format received";
     }
   

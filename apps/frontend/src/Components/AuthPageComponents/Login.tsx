@@ -6,6 +6,7 @@ import { useGetGithubTokenLink, useGetGoogleAuthLink, useGetGoogleTokenLink, use
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Loading from '../Loading';
 import { ErrorAlert } from '@repo/ui';
+import { ErrorState, ErrorCodes } from '@repo/types';
 
 interface LoginProps {
   handleSetAuthFrom: (value: string) => void;
@@ -29,8 +30,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
   const [email, setEmail] = useState<z.infer<typeof emailSchema>>("")
   const [password, setPassword] = useState<z.infer<typeof passwordSchema>>("")
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>("Server error. Please try again after sometime.");
+  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
 
   const isEmailValid = emailSchema.safeParse(email).success;
   const isPasswordValid = passwordSchema.safeParse(password).success;
@@ -54,7 +54,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
       window.location.href = result.url;
     }
     catch (error) {
-      setIsError(true);
+      setError({ showAlert: true, message: "Failed to initiate Google login.", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
       setIsLoading(false);
     }
   }
@@ -67,7 +67,7 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
       window.location.href = result.url;
     }
     catch (error) {
-      setIsError(true);
+      setError({ showAlert: true, message: "Failed to initiate GitHub login.", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
       setIsLoading(false);
     }
   }
@@ -80,13 +80,12 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
         navigate('/');
       } else {
         console.log(result.success)
-        setIsError(true);
-        setErrorMessage(result.message);
+        setError({ showAlert: true, message: result.message, code: ErrorCodes.UNAUTHORIZED, home: false, refresh: false });
         setIsLoading(false);
       }
     }
     catch (error) {
-      setIsError(true);
+      setError({ showAlert: true, message: "Failed to log in.", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
       setIsLoading(false);
     }
   }
@@ -133,9 +132,8 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
       }
       catch (error) {
         const msg = error instanceof Error ? error.message : 'Server error. Please try again after sometime.';
-        setErrorMessage(msg);
+        setError({ showAlert: true, message: msg, code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
         setIsLoading(false);
-        setIsError(true);
         sessionStorage.setItem('isOauthTokenFetched', 'false')
         navigate('/v1/auth', { replace: true })
 
@@ -145,10 +143,21 @@ const Login : React.FC<LoginProps> = ({ handleSetAuthFrom }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+
+  // if (isLoading) {
+  //   return <Loading />
+  // }
+
+
+  // if (error.showAlert) {
+  //   return <ErrorAlert message={error.message} setError={setError} />
+  // }
+
+
   return (
     <div>
-      {isLoading && <Loading />}
-      { isError && <ErrorAlert message={errorMessage} /> }
+      { isLoading && <Loading /> }
+      { error.showAlert && <ErrorAlert message={error.message} setError={setError} home={error.home} refresh={error.refresh} /> }
       <div className='text-sm'>Please log in to continue.</div>
       <div className='pt-4'>
         <div onClick={handleGoogleLogin} className='flex items-center justify-center space-x-2 bg-[#151515] px-4 py-2 rounded cursor-pointer hover:bg-[#252525] transition-colors duration-200 mb-2'>

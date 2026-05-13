@@ -1,12 +1,12 @@
 import matchStore from "./matchStore";
 import chalk from "chalk";
-import { Codes, CodesType } from "@repo/types"
+import { Codes, CodesType, ErrorCodesType, PlayerInfo } from "@repo/types"
 
-type MatchCallback = (match: [number, number], matchId: string) => void;
+type MatchCallback = (match: [PlayerInfo, PlayerInfo], matchId: string) => void;
 
 
 class Pool {
-  private pool: Array<number>;
+  private pool: Array<PlayerInfo>;
   private cancelledUsers: Map<number, number>;
   private activeUsers: Set<number>;
   private findMatchCallback: Map<number, MatchCallback>;
@@ -31,7 +31,8 @@ class Pool {
     this.timeOfLastCallToFindMatch.set(userId, timeoutId);
   }
 
-  join(userId: number, callback: MatchCallback): CodesType {
+  join(userInfo: PlayerInfo, callback: MatchCallback): ErrorCodesType | typeof Codes.SUCCESS {
+    const userId = userInfo.playerId;
     if (this.activeUsers.has(userId)) {
       return Codes.IN_MATCHMAKING;
     }
@@ -42,7 +43,7 @@ class Pool {
 
     this.setTimeOfCall(userId);
     this.activeUsers.add(userId);
-    this.pool.push(userId);
+    this.pool.push(userInfo);
     this.findMatchCallback.set(userId, callback);
     this.findMatch();
     return Codes.SUCCESS;
@@ -58,15 +59,16 @@ class Pool {
     console.log(chalk.blue(`Cancelled count for user ${userId}: ${this.cancelledUsers.get(userId)}\n`))
   }
 
-  private getValidUserId(): number | null {
+  private getValidUserId(): PlayerInfo | null {
     while (this.pool.length > 0) {
 
-      const userId = this.pool.shift()!;
+      const userInfo = this.pool.shift()!;
+      const userId = userInfo.playerId;
       let cancelledCount1 = this.cancelledUsers.get(userId) ?? 0;
       console.log(chalk.blue(`userId: ${userId}, cancelledCount1: ${cancelledCount1}\n`));
       
       if (cancelledCount1 === 0) {
-        return userId;
+        return userInfo;
       }
       
       // Decrement the cancelled count for the first user if they have cancelled
@@ -83,21 +85,24 @@ class Pool {
   private findMatch() {
     while (this.pool.length >= 2) {
       
-      const userId1 = this.getValidUserId();
+      const userInfo1 = this.getValidUserId();
 
-      if (userId1 === null) {
+      if (userInfo1 === null) {
         return;
       }
       
       
       // Decrement the cancelled count for the second user if they have cancelled
-      const userId2 = this.getValidUserId();
+      const userInfo2 = this.getValidUserId();
 
-      if (userId2 === null) {
+      if (userInfo2 === null) {
         // If the second user is null, add the first user back to the pool and return
-        this.pool.unshift(userId1);
+        this.pool.unshift(userInfo1);
         return;
       }
+
+      const userId1 = userInfo1.playerId;
+      const userId2 = userInfo2.playerId;
 
       console.log(chalk.yellow(`UserId1: ${userId1}, UserId2: ${userId2}`))
 
@@ -110,12 +115,12 @@ class Pool {
         const callback1 = this.findMatchCallback.get(userId1);
         const matchId = crypto.randomUUID();
         if (callback1) {
-          callback1([userId1, userId2], matchId);
+          callback1([userInfo1, userInfo2], matchId);
         }
 
         const callback2 = this.findMatchCallback.get(userId2);
         if (callback2) {
-          callback2([userId1, userId2], matchId);
+          callback2([userInfo2, userInfo1], matchId);
         }
 
         this.findMatchCallback.delete(userId1);

@@ -2,9 +2,10 @@ import jwt from 'jsonwebtoken';
 import { jwt_secret } from '../env';
 import userDb from '../db/user';
 import { User } from '../prisma/generated/client';
+import { PlayerInfo } from '@repo/types';
 
 
-export default async function validateToken(token: string): Promise<number> {
+export default async function validateToken(token: string): Promise<PlayerInfo> {
   try {
     const parsedUser = jwt.verify(token, jwt_secret) as { id: number };
     // const requiredFields = { id: true };
@@ -13,7 +14,14 @@ export default async function validateToken(token: string): Promise<number> {
       console.log('User not found for token validation, userId:', parsedUser.id);
       throw new Error('User not found');
     }
-    return user.id;
+
+    const userInfo : PlayerInfo = {
+      playerId: user.id,
+      username: user.username,
+      pictureUrl: user.picture,
+    }
+
+    return userInfo;
   }
   catch (error) {
     // console.error('Error validating token:', error);

@@ -5,12 +5,13 @@ import { Navbar } from '../../Components/Navbar'
 // import { useNavigate } from 'react-router-dom'
 import { ErrorAlert } from '@repo/ui'
 // import { cn } from '../../../../../packages/ui/src/lib/utils'
-import { ErrorCodes, ErrorState } from '@repo/types';
+import { Codes, ErrorCodes, ErrorState, MatchFoundPayload } from '@repo/types';
 import { WebSocketMessage } from '@repo/types'
 import setWebSocketError from '../../utils/setWebSocketError';
 import Loading from '../../Components/Loading'
 import { parseWebSocketErrorFromMsg } from '../../utils/parseWebSocketErrorFromMsg'
 import { useIsLoggedIn } from '../../server/router/getDataFromServer'
+import { Avatar } from '@mui/material';
 
 const host : URL = import.meta.env.VITE_WS_URL || new URL('ws://localhost:3000');
 
@@ -43,9 +44,10 @@ const PlayRandomLandingPage = () => {
   // console.log(first)
   const [isMatching, setIsMatching] = useState<boolean>(false);
   const [firstLoad, setFirstLoad] = useState<boolean>(true);
+  const [matchInfo, setMatchInfo] = useState<MatchFoundPayload | null>(null);
   // const user = useUserStore((state) => state.user);
   // const userIsLoading = useUserStore((state) => state.userIsLoading);
-  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKOWN_ERROR, home: false, refresh: false });
+  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const isLoggedIn = useIsLoggedIn();
 
@@ -94,6 +96,9 @@ const PlayRandomLandingPage = () => {
             throw new Error(msgIn);
           }
 
+          if (msg.code === Codes.MATCH_FOUND) {
+            setMatchInfo(msg.payload);
+          }
 
           console.log('Received message from WebSocket:', msg);
           
@@ -154,17 +159,56 @@ const PlayRandomLandingPage = () => {
           <Navbar />
         </motion.div>
         <motion.div variants={item} className='flex flex-col items-center justify-center h-full'>
-          <motion.h1 className='text-4xl font-bold'>
-            {
-              firstLoad ? "Click the button below to find a random opponent!" :
-              isMatching ? "Finding you an opponent..." : "No opponents found. Please try again later."
-            }
-          </motion.h1>
-          <motion.div>
-            <motion.button className={`${isMatching ? 'bg-[#272727] text-red-700' : 'bg-[#efefef] text-black'} px-4 py-2 rounded-md mt-5 `} onClick={() => setIsMatching(!isMatching)}>
-              {isMatching ? "Stop Matching" : "Find Match"}
-            </motion.button>
-          </motion.div>
+          {
+            matchInfo ? (
+              <motion.div className='flex flex-col items-center justify-center h-full'>
+                <motion.h1 className='text-4xl font-bold mb-5'>Match Found!</motion.h1>
+                <motion.div className='flex space-x-10'>
+                  {matchInfo.players.map((player, ind) => (
+                    <React.Fragment key={player.playerId}>
+                    <motion.div className='flex flex-col items-center' animate={{ opacity: [0, 1] }} transition={{ duration: 0.5, delay: ind * 0.5, ease: "easeInOut" }}>
+                      <Avatar src={player.pictureUrl || undefined} alt={player.username} sx={{ width: 100, height: 100, mb: 2 }} />
+                      <motion.span className='text-lg font-semibold'>{player.username}</motion.span>
+                    </motion.div>
+                    {
+                      ind < matchInfo.players.length - 1 && (
+                      <motion.div className='flex flex-col items-center justify-center' >
+                        <motion.span className='text-2xl font-bold'>VS</motion.span>
+                      </motion.div>
+                      )
+                    }
+                    </React.Fragment>
+                  ))}
+                </motion.div>
+                <motion.div 
+                  className='mt-10 text-yellow-600 text-lg font-medium'
+                  animate={{ opacity: [0.4, 1, 0.4] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  Please wait while we redirect you to the game room
+                  <motion.span animate={{ opacity: [0, 1, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0 }}>.</motion.span>
+                  <motion.span animate={{ opacity: [0, 1, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>.</motion.span>
+                  <motion.span animate={{ opacity: [0, 1, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}>.</motion.span>
+                </motion.div>
+              </motion.div>
+            )
+            :
+            (
+              <motion.div className='flex flex-col items-center justify-center h-full'>
+                <motion.h1 className='text-4xl font-bold'>
+                {
+                  firstLoad ? "Click the button below to find a random opponent!" :
+                  isMatching ? "Finding you an opponent..." : "No opponents found. Please try again later."
+                }
+                </motion.h1>
+                <motion.div>
+                  <motion.button className={`${isMatching ? 'bg-[#272727] text-red-700' : 'bg-[#efefef] text-black'} px-4 py-2 rounded-md mt-5 `} onClick={() => setIsMatching(!isMatching)}>
+                    {isMatching ? "Stop Matching" : "Find Match"}
+                  </motion.button>
+                </motion.div>
+              </motion.div>
+            )
+          }
         </motion.div>
         <motion.div variants={item} className='flex justify-center mb-5'>
           <div className='bg-black px-4 py-2 rounded-md text-sm font-semibold text-yellow-600'>
