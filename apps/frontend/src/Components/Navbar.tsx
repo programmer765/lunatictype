@@ -7,9 +7,9 @@ import Profile from "./Profile/Profile";
 import { useNavigate } from "react-router-dom";
 import useHomeStore from "../store/homeStore";
 import useUserStore from "../store/userStore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useIsLoggedIn } from "../server/router/getDataFromServer";
-import Loading from "./Loading";
+// import Loading from "./Loading";
 
 export const Navbar : React.FC = () => {
 
@@ -17,7 +17,7 @@ export const Navbar : React.FC = () => {
 	const setIsHome = useHomeStore((state) => state.setIsHome);
 	const isHome = useHomeStore((state) => state.isHome);
 	const user = useUserStore((state) => state.user);
-	const [isLoading, setIsLoading] = useState<boolean>(false);
+	// const [isLoading, setIsLoading] = useState<boolean>(false);
   const isLoggedIn = useIsLoggedIn();
   const setUser = useUserStore((state) => state.setUser);
 	const setUserIsLoading = useUserStore((state) => state.setUserIsLoading);
@@ -44,12 +44,12 @@ export const Navbar : React.FC = () => {
 		// checkLoggedIn();
 
 		if(isLoggedIn.isLoading) {
-			setIsLoading(true);
+			// setIsLoading(true);
 			setUserIsLoading(true);
 			return;
 		}
 
-		setIsLoading(false);
+		// setIsLoading(false);
 		setUserIsLoading(false);
 
 		if (
@@ -68,10 +68,6 @@ export const Navbar : React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isLoggedIn.isLoading]);
 
-
-	if(isLoading) {
-		return <Loading />
-	}
 
 	return (
 		<div className="py-5 text-white px-5">

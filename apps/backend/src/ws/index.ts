@@ -15,7 +15,7 @@ export function initWebSocketServer(server: Server) {
       await handleMatchMaking(ws, url, req);
     }
     else if (pathName.startsWith('/ws/match')) {
-      handleMatch(ws, url);
+      handleMatch(ws, url, req);
     }
     else {
       ws.close(1008, 'Invalid path');

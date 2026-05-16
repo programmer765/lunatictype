@@ -1,11 +1,12 @@
 import WebSocket from 'ws';
+import { MsgCodes, MsgCodesType } from '@repo/types';
 
 const TIMER = 60 * 1000; // 60 seconds
 
 const MatchStatus = {
-  waitingForPlayers: 'waiting_for_players',
-  inProgress: 'in_progress',
-  completed: 'completed'
+  WAITING_FOR_PLAYERS: 'WAITING_FOR_PLAYERS',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED'
 } as const;
 
 const MatchTypes = {
@@ -13,17 +14,10 @@ const MatchTypes = {
   private: 'private'
 } as const;
 
-const BroadcastMessageTypes = {
-  matchStart: 'match_start',
-  matchEnd: 'match_end',
-  opponentPositionUpdate: 'opponent_position_update'
-} as const;
-
 type MatchStatusType = (typeof MatchStatus)[keyof typeof MatchStatus];
 type MatchType = (typeof MatchTypes)[keyof typeof MatchTypes];
-type BroadcastMessageType = (typeof BroadcastMessageTypes)[keyof typeof BroadcastMessageTypes];
 
-interface PlayerInfo {
+export interface ClientInfo {
   userId: number;
   ws: WebSocket;
   connected: boolean;
@@ -31,7 +25,7 @@ interface PlayerInfo {
 }
 
 interface MatchInfo {
-  players: PlayerInfo[];
+  players: ClientInfo[];
   status: MatchStatusType;
   matchType: MatchType;
   disconnectedCount: number;
@@ -41,7 +35,7 @@ interface MatchInfo {
 }
 
 interface BroadcastMessage {
-  type: BroadcastMessageType;
+  type: MsgCodesType;
   message: string;
 }
 
@@ -62,7 +56,7 @@ class MatchStore {
 
       const matchInfo: MatchInfo = {
         players: [],
-        status: MatchStatus.waitingForPlayers,
+        status: MatchStatus.WAITING_FOR_PLAYERS,
         matchType: isRandom ? MatchTypes.random : MatchTypes.private,
         disconnectedCount: 0
       }
@@ -101,7 +95,7 @@ class MatchStore {
       }
   
       if (matchInfo.matchType === MatchTypes.random && matchInfo.players.length >= 2) {
-        throw new Error('Random match is already full');
+        throw new Error('This match is already full');
       }
       matchInfo.players.push({ userId, ws, connected: false });
 
@@ -111,7 +105,7 @@ class MatchStore {
     }
   }
 
-  getUsersInMatchExceptUser(matchId: string, userId: number): PlayerInfo[] {
+  getUsersInMatchExceptUser(matchId: string, userId: number): ClientInfo[] {
     try {
       const matchInfo = this.matches.get(matchId);
       if (!matchInfo) {
@@ -154,8 +148,8 @@ class MatchStore {
 
       const allPlayersConnected = matchInfo.players.every(info => info.connected);
       if (allPlayersConnected) {
-        matchInfo.status = MatchStatus.inProgress;
-        const broadcastMessage = { type: BroadcastMessageTypes.matchStart, message: 'Match is starting!' };
+        matchInfo.status = MatchStatus.IN_PROGRESS;
+        const broadcastMessage = { type: MsgCodes.MATCH_START, message: 'Match is starting!' };
         this.broadcastToMatch(matchId, broadcastMessage);
         this.startMatchTimer(matchId, TIMER);
       }
@@ -201,7 +195,7 @@ class MatchStore {
 
       playerInfo.connected = false;
 
-      if (matchInfo.status === MatchStatus.completed) {
+      if (matchInfo.status === MatchStatus.COMPLETED) {
         matchInfo.disconnectedCount++;
         if (matchInfo.disconnectedCount >= matchInfo.players.length) {
           this.deleteMatch(matchId);
@@ -223,8 +217,8 @@ class MatchStore {
       }
 
       matchInfo.matchTimer = setTimeout(() => {
-        matchInfo.status = MatchStatus.completed;
-        const broadcastMessage = { type: BroadcastMessageTypes.matchEnd, message: 'Match has ended!' };
+        matchInfo.status = MatchStatus.COMPLETED;
+        const broadcastMessage = { type: MsgCodes.MATCH_END, message: 'Match has ended!' };
         this.broadcastToMatch(matchId, broadcastMessage);
         this.endMatch(matchId);
       }, duration);
@@ -258,7 +252,7 @@ class MatchStore {
         throw new Error('Match does not exist');
       }
 
-      matchInfo.status = MatchStatus.completed;
+      matchInfo.status = MatchStatus.COMPLETED;
 
       const playersDisconnected = matchInfo.players.every(player => !player.connected);
       if (playersDisconnected) {

@@ -3,6 +3,7 @@ import { useGetRandomWordFromServer } from '../server/router/getDataFromServer'
 import Loading from './Loading'
 import { motion } from 'framer-motion'
 import { ErrorAlert } from '@repo/ui'
+import { ErrorCodes, ErrorState } from '@repo/types'
 
 
 interface CharState {
@@ -26,7 +27,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
   const getRandomWordsFromServer = useGetRandomWordFromServer()
 
   const [loading, setLoading] = useState<boolean>(true)
-  const [isError, setIsError] = useState<boolean>(false)
+  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false })
   const [cursorPosition, setCursorPosition] = useState<{x: number, y: number}>({x: 0, y: 0})
   const [chars, setChars] = useState<CharState[]>([])
   const [index, setIndex] = useState<number>(0)
@@ -87,7 +88,6 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
         const prevTop = Math.round(prevChar.getBoundingClientRect().top)
         const currentTop = Math.round(char.getBoundingClientRect().top)
         if(currentTop > prevTop) {
-          console.log(currentLine)
           if(skipFirstLine) {
             setSkipFirstLine(false)
             return
@@ -97,7 +97,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
         }
       }
     })
-  }, [characterRef, currentLine, lineStarts, skipFirstLine, updateLineStarts])
+  }, [characterRef, lineStarts, skipFirstLine])
   
   const decreaseCurrentLine = useCallback((index: number) => {
     requestAnimationFrame(() => {
@@ -107,7 +107,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
           const nextTop = nextChar.getBoundingClientRect().top
           const currentTop = char.getBoundingClientRect().top
           if(currentTop < nextTop) {
-            console.log(currentLine)
+            // console.log(currentLine)
             if(currentLine === 0) {
               setSkipFirstLine(true)
             }
@@ -116,10 +116,9 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
           }
         }
     })
-  }, [characterRef, currentLine, updateLineStarts])
+  }, [characterRef, currentLine])
 
   useEffect(() => {
-    console.log(getRandomWordsFromServer)
     if(getRandomWordsFromServer.isLoading === true) {
       setLoading(true)
       return
@@ -128,7 +127,13 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
       setLoading(false)
       // alert("Server Error: Unable to fetch words. Please try again later.")
       // ErrorAlert({message: "Server Error: Unable to fetch words. Please try again later."})
-      setIsError(true)
+      setError({
+        showAlert: true,
+        message: "Server Error: Unable to fetch words. Please try again later.",
+        code: ErrorCodes.SERVER_ERROR,
+        home: true,
+        refresh: false
+      })
       return
     }
     const words: string[] = getRandomWordsFromServer.data ? getRandomWordsFromServer.data : [""]
@@ -152,18 +157,18 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
   useLayoutEffect(() => {
     if (chars.length === 0) return
     
-    const first = characterRef.current[0]
-    if(first) {
-      const rect = first.getBoundingClientRect()
-      setLineHeight(rect.height)
-    }
-    updateLineStarts()
     
     // Only remove loading after layout is calculated
     requestAnimationFrame(() => {
+      const first = characterRef.current[0]
+      if(first) {
+        const rect = first.getBoundingClientRect()
+        setLineHeight(rect.height)
+      }
+      updateLineStarts()
       setLoading(false)
     })
-  }, [chars, updateLineStarts])
+  }, [chars])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -238,7 +243,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
   useEffect(() => {
     requestAnimationFrame(() => updateCursorPosition(index))
     updateLineStarts()
-  }, [index, updateCursorPosition, updateLineStarts])
+  }, [index])
 
   useEffect(() => {
     // updateCursorPosition(index)
@@ -256,7 +261,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [index, updateCursorPosition, updateLineStarts])
+  }, [index])
 
 
   const getCharColor = (char: CharState) => {
@@ -281,6 +286,12 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
   const translateY = computeTranslateY()
 
 
+
+  if (loading) {
+    return <Loading />
+  }
+
+
   return (
     <motion.div
       initial='hidden'
@@ -292,13 +303,12 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
       transition={{ duration: 1 }}
       className='relative'
     >
-      { loading && <Loading />}
-      { isError && <ErrorAlert message="Error fetching words from server." /> }
+      { error.showAlert && <ErrorAlert message={error.message} setError={setError} home={error.home} refresh={error.refresh} /> }
       <div className='h-[30vh] flex items-center'>
         <div 
           ref={containerRef} 
           className={`relative flex flex-wrap text-justify overflow-hidden transition-opacity duration-200 ${loading ? 'opacity-0' : 'opacity-100'}`}
-          style={{ height: lineHeight * 3.5 || '32vh' }}
+          style={{ height: lineHeight * 3.5 || '26vh' }}
         >
           <div 
             ref={textRef} 
@@ -306,7 +316,7 @@ const PracticeWords : React.FC<PracticeWordsProps> = ({ charactersTyped, errorsM
             style={{ transform: `translateY(-${translateY}px)`}}
           >
           <div 
-            className='absolute w-[2px] h-12 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink'
+            className='absolute inline-block w-[2px] h-12 bg-[#FFBF00] transition-transform duration-300 ease-in-out animate-blink align-middle'
             style={{ transform: `translate(${cursorPosition.x}px, ${cursorPosition.y}px)`}}
           />
           {
