@@ -1,5 +1,5 @@
 import { SocketMsgCodes, PositionUpdatePayload, MatchSocketMessage } from "@repo/types";
-
+const host : string = import.meta.env.VITE_WS_URL || 'ws://localhost:3000/ws';
 
 
 type MatchSocketMessageCode = MatchSocketMessage["code"];
@@ -9,19 +9,29 @@ type EventCallback = (data: MatchSocketMessage) => void;
 class MatchSocket {
   private socket: WebSocket | null = null;
   private listeners: Map<MatchSocketMessageCode, EventCallback[]> = new Map();
+  private onErrorCallback: ((error: Event) => void) | null = null;
 
   connect(matchId: string) {
     // this.matchId = matchId;
-    this.socket = new WebSocket(`wss://example.com/match/${matchId}`);
+    this.socket = new WebSocket(`${host}/match/${matchId}`);
 
     this.socket.onopen = () => {
       console.log('WebSocket connection established');
     }
 
     this.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('Received data:', data);
-      this.handleMessage(data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Received data:', data);
+        this.emit(data.code, data);
+
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    }
+
+    this.socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
     }
 
     this.socket.onclose = () => {
@@ -35,16 +45,6 @@ class MatchSocket {
       this.socket = null;
       this.listeners.clear();
     }
-  }
-
-
-  private handleMessage(data: MatchSocketMessage) {
-    if (data.isError) {
-      console.error('Error message received:', data.message);
-      return
-    }
-
-    this.emit(data.code, data);
   }
 
   sendPositionUpdate(position: number, wpm: number, rawWpm: number) {
@@ -91,7 +91,7 @@ class MatchSocket {
     }
   }
 
-  emit(code: MatchSocketMessageCode, data: MatchSocketMessage) {
+  private emit(code: MatchSocketMessageCode, data: MatchSocketMessage) {
     if (this.listeners.has(code)) {
       this.listeners.get(code)!.forEach(callback => callback(data));
     }

@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
-import { MsgCodes, MsgCodesType } from '@repo/types';
+import { MatchSocketMessage, SocketMsgCodes, SocketMsgCodesType } from '@repo/types';
+import { generate } from 'random-words';
 
 const TIMER = 60 * 1000; // 60 seconds
 
@@ -21,6 +22,7 @@ export interface ClientInfo {
   userId: number;
   ws: WebSocket;
   connected: boolean;
+  ready: boolean;
   reconnectTimer?: NodeJS.Timeout;
 }
 
@@ -32,11 +34,6 @@ interface MatchInfo {
   matchTimer?: NodeJS.Timeout;
   wordsTyped?: number;
   totalWords?: number;
-}
-
-interface BroadcastMessage {
-  type: MsgCodesType;
-  message: string;
 }
 
 
@@ -63,6 +60,35 @@ class MatchStore {
   
       this.matches.set(matchId, matchInfo);
 
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
+    }
+  }
+
+  setClientReady(matchId: string, userId: number) {
+    try {
+      const matchInfo = this.matches.get(matchId);
+      if (!matchInfo) {
+        throw new Error('Match does not exist');
+      }
+
+      const userInfo = matchInfo.players.find(info => info.userId === userId);
+      if (!userInfo) {
+        throw new Error('User not found in match');
+      }
+      userInfo.ready = true;
+      const allPlayersReady = matchInfo.players.every(info => info.ready);
+      const allPlayersConnected = matchInfo.players.every(info => info.connected);
+      if (allPlayersReady && allPlayersConnected) {
+        matchInfo.status = MatchStatus.IN_PROGRESS;
+        const broadcastMessage : MatchSocketMessage = {
+          code: SocketMsgCodes.MATCH_START,
+          isError: false,
+        };
+        this.broadcastToMatch(matchId, broadcastMessage);
+        // this.startMatchTimer(matchId, TIMER);
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Internal server error';
       throw new Error(errorMessage);
@@ -97,13 +123,46 @@ class MatchStore {
       if (matchInfo.matchType === MatchTypes.random && matchInfo.players.length >= 2) {
         throw new Error('This match is already full');
       }
-      matchInfo.players.push({ userId, ws, connected: false });
+      matchInfo.players.push({ userId, ws, ready: false, connected: false });
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Internal server error';
       throw new Error(errorMessage);
     }
   }
+
+
+  sendWordsListToUsers(matchId: string) {
+    try {
+
+      const matchInfo = this.matches.get(matchId);
+      if (!matchInfo) {
+        throw new Error('Invalid matchId');
+      }
+
+      const words = generate({ exactly: 500, maxLength: 6});
+      if(Array.isArray(words) === false || words === undefined || words === null) {
+        throw new Error("randomWords did not generate propery. It is either not an array or undefined")
+      }
+      const wordsArray = Array.isArray(words) ? words : [""]
+
+      const message : MatchSocketMessage = {
+        code: SocketMsgCodes.WORD_LIST,
+        isError: false,
+        payload: {
+          words: wordsArray
+        }
+      }
+      
+      this.broadcastToMatch(matchId, message);
+
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
+    }
+  }
+
 
   getUsersInMatchExceptUser(matchId: string, userId: number): ClientInfo[] {
     try {
@@ -146,13 +205,16 @@ class MatchStore {
       userInfo.ws = ws;
       userInfo.connected = true;
 
-      const allPlayersConnected = matchInfo.players.every(info => info.connected);
-      if (allPlayersConnected) {
-        matchInfo.status = MatchStatus.IN_PROGRESS;
-        const broadcastMessage = { type: MsgCodes.MATCH_START, message: 'Match is starting!' };
-        this.broadcastToMatch(matchId, broadcastMessage);
-        this.startMatchTimer(matchId, TIMER);
-      }
+      // const allPlayersConnected = matchInfo.players.every(info => info.connected);
+      // if (allPlayersConnected) {
+      //   matchInfo.status = MatchStatus.IN_PROGRESS;
+      //   const broadcastMessage : MatchSocketMessage = {
+      //     code: SocketMsgCodes.MATCH_START,
+      //     isError: false,
+      //   };
+      //   this.broadcastToMatch(matchId, broadcastMessage);
+      //   // this.startMatchTimer(matchId, TIMER);
+      // }
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Internal server error';
@@ -161,7 +223,7 @@ class MatchStore {
 
   }
 
-  private broadcastToMatch(matchId: string, message: BroadcastMessage) {
+  private broadcastToMatch(matchId: string, message: MatchSocketMessage) {
     try {
       const matchInfo = this.matches.get(matchId);
       if (!matchInfo) {
@@ -193,6 +255,7 @@ class MatchStore {
         throw new Error('User not found in match');
       }
 
+      playerInfo.ready = false;
       playerInfo.connected = false;
 
       if (matchInfo.status === MatchStatus.COMPLETED) {
@@ -218,7 +281,10 @@ class MatchStore {
 
       matchInfo.matchTimer = setTimeout(() => {
         matchInfo.status = MatchStatus.COMPLETED;
-        const broadcastMessage = { type: MsgCodes.MATCH_END, message: 'Match has ended!' };
+        const broadcastMessage : MatchSocketMessage = {
+          code: SocketMsgCodes.MATCH_END,
+          isError: false,
+        };
         this.broadcastToMatch(matchId, broadcastMessage);
         this.endMatch(matchId);
       }, duration);

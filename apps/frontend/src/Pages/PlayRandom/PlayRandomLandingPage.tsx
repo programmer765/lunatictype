@@ -5,15 +5,16 @@ import { Navbar } from '../../Components/Navbar'
 // import { useNavigate } from 'react-router-dom'
 import { ErrorAlert } from '@repo/ui'
 // import { cn } from '../../../../../packages/ui/src/lib/utils'
-import { Codes, ErrorCodes, ErrorState, MatchFoundPayload } from '@repo/types';
+import { Codes, ErrorCodes, ErrorState, MatchFoundPayload, SocketMsgCodes } from '@repo/types';
 import { WebSocketMessage } from '@repo/types'
 import setWebSocketError from '../../utils/setWebSocketError';
 import Loading from '../../Components/Loading'
 import { parseWebSocketErrorFromMsg } from '../../utils/parseWebSocketErrorFromMsg'
 import { useIsLoggedIn } from '../../server/router/getDataFromServer'
 import { Avatar } from '@mui/material';
+import { matchSocket } from '../../server/match/matchSocket';
 
-const host : URL = import.meta.env.VITE_WS_URL || new URL('ws://localhost:3000');
+const host : string = import.meta.env.VITE_WS_URL || 'ws://localhost:3000/ws';
 
 const container = {
   hidden: { opacity: 1, scale: 0 },
@@ -50,6 +51,7 @@ const PlayRandomLandingPage = () => {
   const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const isLoggedIn = useIsLoggedIn();
+  // const [words, setWords] = useState<string[]>([]);
 
 
   useEffect(() => {
@@ -76,6 +78,37 @@ const PlayRandomLandingPage = () => {
   }, [isLoggedIn.isLoading])
 
 
+  const matchFunction = (matchId: string) => {
+    try {
+      matchSocket.connect(matchId)
+      matchSocket.on(SocketMsgCodes.WORD_LIST, (data) => {
+        try {
+
+          if (data.isError) {
+            throw new Error(JSON.stringify(data));
+          }
+  
+          if (data.code !== SocketMsgCodes.WORD_LIST) {
+            throw new Error(`Unexpected message code: ${data.code}`);
+          }
+  
+          console.log('Received word list:', data.payload.words);
+        } catch (error) {
+          matchSocket.disconnect();
+          const genError: ErrorState = parseWebSocketErrorFromMsg(error);
+          setWebSocketError({ setError, error: genError });
+        }
+      })
+
+      
+    } catch (error) {
+      // const errorMessage = error instanceof Error ? error.message : 'Server error';
+      // console.error('Failed to connect to WebSocket:', errorMessage);
+      const genError: ErrorState = parseWebSocketErrorFromMsg(error);
+      setWebSocketError({ setError, error: genError });
+    }
+  }
+  
 
 
   useEffect(() => {
@@ -83,7 +116,8 @@ const PlayRandomLandingPage = () => {
     if (firstLoad) setFirstLoad(false);
     
     try {
-      const matchmakingURL = new URL('/ws/matchmaking', host);
+      console.log(host)
+      const matchmakingURL = host + '/matchmaking';
       const ws = new WebSocket(matchmakingURL);
 
       
@@ -98,6 +132,7 @@ const PlayRandomLandingPage = () => {
 
           if (msg.code === Codes.MATCH_FOUND) {
             setMatchInfo(msg.payload);
+            matchFunction(msg.payload.matchId);
           }
 
           console.log('Received message from WebSocket:', msg);
