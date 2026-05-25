@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useGetRandomWordFromServer } from '../server/router/getDataFromServer'
-import Loading from './Loading'
+import { useGetRandomWordFromServer } from '../../server/router/getDataFromServer'
+import Loading from '../Loading'
 import { motion } from 'framer-motion'
 import { ErrorAlert } from '@repo/ui'
 import { ErrorCodes, ErrorState } from '@repo/types'

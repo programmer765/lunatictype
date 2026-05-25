@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import {Navbar} from "../Components/Navbar";
 import { motion } from "framer-motion";
-import PracticeBtn from "../Components/PracticeBtn";
+import PracticeBtn from "../Components/Practice/PracticeBtn";
 import PlayOnlineBtn from "../Components/PlayOnlineBtn";
 import { useState } from "react";
 import Practice from "./Practice";
@@ -15,7 +15,7 @@ const LandingPage : React.FC = () => {
 
   const [isPractice, setIsPractice] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(false);
-  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKOWN_ERROR, home: false, refresh: false });
+  const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
   const setIsHome = useHomeStore((state) => state.setIsHome);
   const isHome = useHomeStore((state) => state.isHome);
   const user = useUserStore((state) => state.user);

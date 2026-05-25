@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import LoginButton from "./LoginButton";
-import SignUpButton from "./SignUpButton";
+import LoginButton from "./AuthPageComponents/LoginButton";
+import SignUpButton from "./AuthPageComponents/SignUpButton";
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import { FaHome } from "react-icons/fa";
 import Profile from "./Profile/Profile";

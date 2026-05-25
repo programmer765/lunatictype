@@ -13,6 +13,7 @@ import { parseWebSocketErrorFromMsg } from '../../utils/parseWebSocketErrorFromM
 import { useIsLoggedIn } from '../../server/router/getDataFromServer'
 import { Avatar } from '@mui/material';
 import { matchSocket } from '../../server/match/matchSocket';
+import CompetePage from '../../Components/Compete/CompetePage';
 
 const host : string = import.meta.env.VITE_WS_URL || 'ws://localhost:3000/ws';
 
@@ -51,7 +52,7 @@ const PlayRandomLandingPage = () => {
   const [error, setError] = useState<ErrorState>({ showAlert: false, message: "", code: ErrorCodes.UNKNOWN_ERROR, home: false, refresh: false });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const isLoggedIn = useIsLoggedIn();
-  // const [words, setWords] = useState<string[]>([]);
+  const [words, setWords] = useState<string[]>([]);
 
 
   useEffect(() => {
@@ -92,7 +93,7 @@ const PlayRandomLandingPage = () => {
             throw new Error(`Unexpected message code: ${data.code}`);
           }
   
-          console.log('Received word list:', data.payload.words);
+          setWords(data.payload.words);
         } catch (error) {
           matchSocket.disconnect();
           const genError: ErrorState = parseWebSocketErrorFromMsg(error);
@@ -180,6 +181,10 @@ const PlayRandomLandingPage = () => {
     return <Loading />
   }
 
+
+  if (matchInfo && words.length > 0) {
+    return <CompetePage words={words} />
+  }
 
   return (
     <motion.div className='h-screen flex bg-[#202020] flex-col text-white'>

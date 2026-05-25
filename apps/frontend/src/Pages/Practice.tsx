@@ -1,14 +1,14 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, { useRef, useState } from 'react'
-import PracticeWords from '../Components/PracticeWords'
-import PracticeType from '../Components/PracticeType'
+import PracticeWords from '../Components/Practice/PracticeWords'
+import PracticeType from '../Components/Practice/PracticeType'
 import RefreshWords from '../Components/RefreshWords'
 import TypingResults from '../Components/TypingResults'
 
 const Practice : React.FC = () => {
 
   const [componentKey, setComponentKey] = useState<number>(0)
-  const [isCompleted, setIsCompleted] = useState<boolean>(false) // for testing purpose, change to false later
+  const [isCompleted, setIsCompleted] = useState<boolean>(false)
   const [isStarted, setIsStarted] = useState<boolean>(false)
   const charactersTyped = useRef<number>(0)
   const timeTaken = useRef<number>(0) // in seconds
