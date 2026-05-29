@@ -5,14 +5,29 @@ interface CompeteWordsProps {
   words: string[]
 }
 
+interface CharState {
+  char: string;
+  state: "untyped" | "correct" | "incorrect";
+}
+
+const charColors = {
+  untyped: "#888888", // Gray for untyped characters
+  correct: "#ffffff", // White for correct characters
+  incorrect: "#f44336" // Red for incorrect characters
+}
+
 const countDown = 3; // Countdown duration in seconds
 
-const Cursor : React.FC<{color: string}> = ({color}) => (
-  <motion.span 
-    className="inline-block w-1 h-[1.2em] relative"
+const Cursor : React.FC<{color: string, layoutId: string}> = ({color, layoutId}) => (
+  <motion.span
+    layoutId={layoutId}
+    layout
+    className="absolute inline-block w-[2px] h-[1.2em] align-middle animate-blink"
     style={{ backgroundColor: color, verticalAlign: 'text-bottom' }}
-    animate={{ opacity: [0, 1] }}
-    transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
+    transition={{ 
+      layout: { duration: 0.2, ease: "easeInOut" },
+      // opacity: { duration: 0.3, repeat: Infinity, repeatType: "reverse" },
+    }}
   />
 )
 
@@ -21,6 +36,15 @@ const Cursor : React.FC<{color: string}> = ({color}) => (
 export const CompeteWords: React.FC<CompeteWordsProps> = ({ words }) => {
 
   const str = words.join(" ");
+
+  const [charArray, setCharArray] = useState<CharState[]>(() => {
+    return str.split("").map((char) => {
+      return {
+        char,
+        state: "untyped"
+      }
+    });
+  });
   const [maxHeight, setMaxHeight] = useState<number | null>(null);
   const containerRef = useRef<HTMLSpanElement>(null);
   const [startTimer, setStartTimer] = useState<number>(countDown);
@@ -59,17 +83,66 @@ export const CompeteWords: React.FC<CompeteWordsProps> = ({ words }) => {
   }, [str]);
 
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (startTimer >= 0) return; // Ignore input during countdown
+
+      const { ctrlKey, metaKey, shiftKey } = event
+      if (ctrlKey || metaKey || shiftKey) return
+      if (event.key.length === 1) {
+
+        const isCorrect = event.key === charArray[player1Pos].char
+        setCharArray(prev => {
+          const newArray = [...prev];
+          newArray[player1Pos] = {
+            char: prev[player1Pos].char,
+            state: isCorrect ? "correct" : "incorrect"
+          }
+          return newArray;
+        });
+
+        setPlayer1Pos(prev => prev + 1);
+
+      } else if (event.key === "Backspace") {
+
+        if (player1Pos === 0) return; // Can't backspace at the start
+
+        setCharArray(prev => {
+          const newArray = [...prev];
+          newArray[player1Pos - 1] = {
+            char: prev[player1Pos - 1].char,
+            state: "untyped"
+          }
+          return newArray;
+        });
+
+        setPlayer1Pos(prev => Math.max(prev - 1, 0));
+      }
+
+
+      
+
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [startTimer, player1Pos, charArray]);
+
+
+
   const isTimerDone = startTimer < 0;
-  console.log(isTimerDone, startTimer)
 
 
   const renderWordsWithCursor = () => {
-    const charArray = str.split("");
+    
     return charArray.map((char, index) => (
-      <span key={index} className="relative text-[#acacac]">
-        { index === player1Pos && <Cursor color="blue" /> }
-        { index === player2Pos && <Cursor color="red" /> }
-        {char}
+      <span key={index} className="relative" style={{ color: charColors[char.state], transition: "color 0.3s" }}>
+        { index === player1Pos && <Cursor color="blue" layoutId="player1" /> }
+        { index === player2Pos && <Cursor color="red" layoutId="player2" /> }
+        {char.char}
       </span>
     ));
   }
