@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Navbar } from '../../Components/Navbar'
 // import useUserStore from '../../store/userStore'
 // import { useNavigate } from 'react-router-dom'
@@ -53,7 +53,12 @@ const PlayRandomLandingPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const isLoggedIn = useIsLoggedIn();
   const [words, setWords] = useState<string[]>([]);
+  const [holdVsInfo, setHoldVsInfo] = useState<number>(0);
+  const [ackReceived, setAckReceived] = useState<boolean>(false);
+  const ackSentRef = useRef<boolean>(false);
 
+
+  const matchFunctionCalledRef = useRef<boolean>(false);
 
   useEffect(() => {
 
@@ -81,6 +86,10 @@ const PlayRandomLandingPage = () => {
 
   const matchFunction = (matchId: string) => {
     try {
+
+      if (matchFunctionCalledRef.current) return
+      matchFunctionCalledRef.current = true;
+
       matchSocket.connect(matchId)
       matchSocket.on(SocketMsgCodes.WORD_LIST, (data) => {
         try {
@@ -96,6 +105,31 @@ const PlayRandomLandingPage = () => {
           setWords(data.payload.words);
         } catch (error) {
           matchSocket.disconnect();
+          matchFunctionCalledRef.current = false;
+
+          const genError: ErrorState = parseWebSocketErrorFromMsg(error);
+          setWebSocketError({ setError, error: genError });
+        }
+      })
+
+      matchSocket.on(SocketMsgCodes.MATCH_START, (data) => {
+        try {
+          
+          if (data.isError) {
+            throw new Error(JSON.stringify(data));
+          }
+
+          if (data.code !== SocketMsgCodes.MATCH_START) {
+            throw new Error(`Unexpected message code: ${data.code}`);
+          }
+
+          setAckReceived(true);
+
+
+        } catch (error) {
+          matchSocket.disconnect();
+          matchFunctionCalledRef.current = false;
+
           const genError: ErrorState = parseWebSocketErrorFromMsg(error);
           setWebSocketError({ setError, error: genError });
         }
@@ -103,8 +137,6 @@ const PlayRandomLandingPage = () => {
 
       
     } catch (error) {
-      // const errorMessage = error instanceof Error ? error.message : 'Server error';
-      // console.error('Failed to connect to WebSocket:', errorMessage);
       const genError: ErrorState = parseWebSocketErrorFromMsg(error);
       setWebSocketError({ setError, error: genError });
     }
@@ -169,6 +201,23 @@ const PlayRandomLandingPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMatching])
 
+  useEffect(() => {
+    if (!matchInfo || words.length === 0) return;
+    if (holdVsInfo >= 3) {
+      if (!ackSentRef.current) {
+        matchSocket.sendAck();
+        ackSentRef.current = true;
+      }
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setHoldVsInfo(prev => prev + 1);
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [matchInfo, words, holdVsInfo]);
+
 
   if (error.showAlert) {
     return (
@@ -181,8 +230,7 @@ const PlayRandomLandingPage = () => {
     return <Loading />
   }
 
-
-  if (matchInfo && words.length > 0) {
+  if (ackReceived) {
     return <CompetePage words={words} />
   }
 

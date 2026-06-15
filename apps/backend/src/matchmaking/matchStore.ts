@@ -222,6 +222,20 @@ class MatchStore {
     }
 
   }
+  
+  allPlayersConnected(matchId: string): boolean {
+    try {
+      const matchInfo = this.matches.get(matchId);
+      if (!matchInfo) {
+        throw new Error('Match does not exist');
+      }
+
+      return matchInfo.players.every(info => info.connected);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
+    }
+  }
 
   private broadcastToMatch(matchId: string, message: MatchSocketMessage) {
     try {

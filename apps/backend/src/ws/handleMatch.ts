@@ -61,7 +61,9 @@ export default async function handleMatch(ws: WebSocket, url: URL, req: Incoming
     matchStore.updateUserWebSocket(matchId, userId, ws);
 
     // Send the word list to the user
-    matchStore.sendWordsListToUsers(matchId);
+    if (matchStore.allPlayersConnected(matchId)) {
+      matchStore.sendWordsListToUsers(matchId);
+    }
   
   
     ws.on('message', async (message) => {
