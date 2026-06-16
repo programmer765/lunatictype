@@ -2,26 +2,19 @@ import { WebSocket } from 'ws';
 import { IncomingMessage } from 'node:http';
 import validateToken from './validateToken';
 import matchStore, { ClientInfo } from '../matchmaking/matchStore';
-import { Codes, ErrorCodes } from '@repo/types';
+import { Codes, ErrorCodes, SocketMsgCodesType, SocketMsgCodes } from '@repo/types';
 import { generateErrorMessage } from './generateSocketMsg';
 import { PlayerInfo } from '@repo/types';
 
-const MatchMessageTypes = {
-  updateUserPosition: 'update_user_position',
-  opponentPositionUpdate: 'opponent_position_update'
-} as const
-
-type MatchMessageTypesType = (typeof MatchMessageTypes)[keyof typeof MatchMessageTypes];
-
 interface MatchMessage {
-  type: MatchMessageTypesType;
+  type: SocketMsgCodesType;
   token?: string;
   position?: number;
 }
 
 
-function isValidMatchMessageType(type: string): type is MatchMessageTypesType {
-  return (Object.values(MatchMessageTypes) as string[]).includes(type);
+function isValidMatchMessageType(type: string): type is SocketMsgCodesType {
+  return (Object.values(SocketMsgCodes) as string[]).includes(type);
 }
 
 
@@ -75,9 +68,16 @@ export default async function handleMatch(ws: WebSocket, url: URL, req: Incoming
         if (!msg.type || !isValidMatchMessageType(msg.type)) {
           throw new Error('Invalid message type');
         }
+
+
+        // Acknowledge the message
+        if (msg.type === SocketMsgCodes.CLIENT_READY) {
+          matchStore.setClientReady(matchId, userId);
+        }
+
   
         // Update user position and broadcast to opponent
-        if (msg.type === MatchMessageTypes.updateUserPosition) {
+        if (msg.type === SocketMsgCodes.POSITION_UPDATE) {
           if (!msg.position || isNaN(msg.position)) {
             throw new Error('update_user_position message missing position');
           }
@@ -87,19 +87,19 @@ export default async function handleMatch(ws: WebSocket, url: URL, req: Incoming
           // Broadcast the user's new position to the other user in the match
           usersInfo.forEach(userInfo => {
             if (userInfo.ws && userInfo.ws.readyState === WebSocket.OPEN) {
-              userInfo.ws.send(JSON.stringify({ type: 'opponent_position_update', userId, position: msg.position }));
+              userInfo.ws.send(JSON.stringify({ type: SocketMsgCodes.OPPONENT_POSITION_UPDATE, userId, position: msg.position }));
             }
           });
   
         }
   
         // update the user of the opponent's position change
-        if (msg.type === MatchMessageTypes.opponentPositionUpdate) {
+        if (msg.type === SocketMsgCodes.OPPONENT_POSITION_UPDATE) {
           if (!msg.position || isNaN(msg.position)) {
             throw new Error('opponent_position_update message missing position');
           }
   
-          ws.send(JSON.stringify({ type: 'opponent_position_update', userId, position: msg.position }));
+          ws.send(JSON.stringify({ type: SocketMsgCodes.OPPONENT_POSITION_UPDATE, userId, position: msg.position }));
   
         }
   
@@ -107,7 +107,7 @@ export default async function handleMatch(ws: WebSocket, url: URL, req: Incoming
       catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Internal server error';
         console.error('Error processing message for matchId:', matchId, 'Error:', errorMessage);
-        ws.send(JSON.stringify({ type: 'error', message: errorMessage }));
+        ws.send(JSON.stringify({ type: ErrorCodes.SERVER_ERROR, message: errorMessage }));
         ws.close(1011);
         return;
       }
@@ -128,7 +128,7 @@ export default async function handleMatch(ws: WebSocket, url: URL, req: Incoming
     });
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : generateErrorMessage(Codes.UNKNOWN_ERROR);
+    const errorMessage = error instanceof Error ? error.message : generateErrorMessage(ErrorCodes.UNKNOWN_ERROR);
     console.error('Error in match connection:\n', JSON.parse(errorMessage));
     ws.send(errorMessage);
     ws.close(1011);

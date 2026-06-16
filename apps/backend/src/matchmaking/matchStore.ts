@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { MatchSocketMessage, SocketMsgCodes, SocketMsgCodesType } from '@repo/types';
 import { generate } from 'random-words';
 
-const TIMER = 60 * 1000; // 60 seconds
+const TIMER = 30 * 1000; // 30 seconds
 
 const MatchStatus = {
   WAITING_FOR_PLAYERS: 'WAITING_FOR_PLAYERS',
@@ -77,23 +77,25 @@ class MatchStore {
       if (!userInfo) {
         throw new Error('User not found in match');
       }
+      
       userInfo.ready = true;
-      const allPlayersReady = matchInfo.players.every(info => info.ready);
-      const allPlayersConnected = matchInfo.players.every(info => info.connected);
-      if (allPlayersReady && allPlayersConnected) {
+
+      if (this.allPlayersReady(matchId) && this.allPlayersConnected(matchId)) {
         matchInfo.status = MatchStatus.IN_PROGRESS;
         const broadcastMessage : MatchSocketMessage = {
           code: SocketMsgCodes.MATCH_START,
           isError: false,
         };
         this.broadcastToMatch(matchId, broadcastMessage);
-        // this.startMatchTimer(matchId, TIMER);
+        this.startMatchTimer(matchId, TIMER);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Internal server error';
       throw new Error(errorMessage);
     }
   }
+  
+  
   
   isValidMatch(matchId: string, userId: number): boolean {
     const matchExists = this.matches.has(matchId);
@@ -236,6 +238,21 @@ class MatchStore {
       throw new Error(errorMessage);
     }
   }
+  
+  allPlayersReady(matchId: string): boolean {
+    try {
+      const matchInfo = this.matches.get(matchId);
+      if (!matchInfo) {
+        throw new Error('Match does not exist');
+      }
+
+      return matchInfo.players.every(info => info.ready);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      throw new Error(errorMessage);
+    }
+  }
 
   private broadcastToMatch(matchId: string, message: MatchSocketMessage) {
     try {
@@ -286,7 +303,7 @@ class MatchStore {
 
   }
 
-  private startMatchTimer(matchId: string, duration: number) {
+  startMatchTimer(matchId: string, durationInMiliSec: number) {
     try {
       const matchInfo = this.matches.get(matchId);
       if (!matchInfo) {
@@ -301,7 +318,7 @@ class MatchStore {
         };
         this.broadcastToMatch(matchId, broadcastMessage);
         this.endMatch(matchId);
-      }, duration);
+      }, durationInMiliSec);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Internal server error';
